@@ -1,0 +1,47 @@
+{
+  "name": "discord-ttl",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "repository": "git@github.com:AyuAi/discord-ttl.git",
+  "author": "Ayu <ayu@ayu.dev>",
+  "precommit": [
+    "yarn run lint",
+    "yarn run pretty"
+  ],
+  "extends": [
+    "plugin:you-dont-need-momentjs/recommended"
+  ],
+  "dependencies": {
+    "@discordjs/builders": "^0.12.0",
+    "@discordjs/rest": "^0.3.0",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
+    "eslint": "^8.2.0",
+    "pg": "^8.7.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "lint": "yarn eslint './src/**/*.ts'",
+    "pretty": "prettier -c './src/**/*.ts'",
+    "lint-fix": "yarn eslint './src/**/*.ts' --fix",
+    "pretty-fix": "prettier -w './src/**/*.ts'",
+    "start": "yarn build && node dist/app.js",
+    "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
+    "docker:build": "docker build --tag discord-ttl .",
+    "build": "yarn tsc",
+    "newstart": "yarn build && yarn start"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/pg": "^8.6.1",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+    "precommit": "^1.2.2",
+    "prettier": "^2.6.1",
+    "ts-node-dev": "^1.1.8"
+  }
+}

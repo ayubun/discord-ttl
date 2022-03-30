@@ -1,0 +1,28 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install node.js v16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - name: ESLint
+        run: yarn lint
+
+      - name: Prettier
+        run: yarn pretty
+      
+      - name: Build
+        run: yarn build

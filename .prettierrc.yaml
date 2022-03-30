@@ -1,0 +1,14 @@
+trailingComma: "all"
+tabWidth: 2
+semi: true
+singleQuote: true
+printWidth: 120
+bracketSpacing: true
+arrowParens: "avoid"
+overrides:
+  - files: ["*.ts", "*.tsx"]
+    options:
+      parser: typescript
+  - files: ["*.json"]
+    options:
+      tabWidth: 2
