@@ -1,7 +1,7 @@
 version: '3.4'
 
 services:
-  sugar:
+  discord-ttl:
     image: discord-ttl
     build:
       context: .
