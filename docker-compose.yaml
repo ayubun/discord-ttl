@@ -2,11 +2,14 @@ version: '3.4'
 
 services:
   discord-ttl:
-    image: discord-ttl
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    # directly using an image instead of building our own
+    image: node:16-alpine
+    working_dir: /usr/src/app
     env_file:
       - .env
-    environment:
-      NODE_ENV: production
+    # runs yarn at runtime so mounts are active
+    command: sh -c "ls -al && yarn --no-progress && yarn start"
+    # mounting our API source directory
+    volumes:
+        - ./:/usr/src/app
+        - /usr/src/app/node_modules
