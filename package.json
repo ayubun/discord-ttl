@@ -2,7 +2,7 @@
   "name": "discord-ttl",
   "version": "1.0.0",
   "main": "dist/app.js",
-  "repository": "git@github.com:AyuAi/discord-ttl.git",
+  "repository": "git@github.com:ayubun/discord-ttl.git",
   "author": "Ayu <ayu@ayu.dev>",
   "precommit": [
     "yarn run lint",
@@ -41,5 +41,6 @@
     "precommit": "^1.2.2",
     "prettier": "^2.6.1",
     "ts-node-dev": "^1.1.8"
-  }
+  },
+  "description": "A simple Discord bot to delete server messages older than a specified TTL (time-to-live)"
 }

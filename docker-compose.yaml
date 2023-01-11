@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   discord-ttl:
-    image: ghcr.io/ayubun/discord-ttl:0
+    image: ghcr.io/ayubun/discord-ttl:1
+    restart: always
     env_file:
       - .env

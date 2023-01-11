@@ -22,14 +22,14 @@ async function handleDeletesForMessagesOlderThan14Days(
 ): Promise<void[]> {
   return Promise.all(
     messages
-      .filter(message => {
+      .filter((message: { createdAt: { getTime: () => number } }) => {
         // Older than 14 days
         return (
           Date.now() - message.createdAt.getTime() >= 14 * 24 * 60 * 60 * 1000 &&
           message.createdAt.getTime() < Date.now() - deleteAfterMillis
         );
       })
-      .map(async message => {
+      .map(async (message: { delete: () => any; id: string }) => {
         await message.delete();
         lastDeletedMessages[channelId] = message.id;
       }),
@@ -40,7 +40,7 @@ async function handleDeletesForMessagesYoungerThan14Days(
   channel: GuildTextBasedChannel,
   messages: Collection<string, Message<boolean>>,
 ): Promise<void | Collection<string, Message<boolean>>> {
-  const messagesToDelete = messages.filter(message => {
+  const messagesToDelete = messages.filter((message: { createdAt: { getTime: () => number } }) => {
     return (
       message.createdAt.getTime() < Date.now() - deleteAfterMillis &&
       Date.now() - message.createdAt.getTime() < 14 * 24 * 60 * 60 * 1000
@@ -52,7 +52,7 @@ async function handleDeletesForMessagesYoungerThan14Days(
   // https://discord.js.org/#/docs/main/stable/class/BaseGuildTextChannel?scrollTo=bulkDelete
   return channel.bulkDelete(messagesToDelete).then(deletedMessages => {
     let newestMessageId = '0';
-    deletedMessages.forEach((_message, snowflake) => {
+    deletedMessages.forEach((_message: any, snowflake: string) => {
       if (BigInt(newestMessageId) < BigInt(snowflake)) {
         newestMessageId = snowflake;
       }
@@ -124,7 +124,7 @@ async function retrieveMessages(): Promise<void> {
   }
 }
 
-client.login(process.env.DISCORD_BOT_TOKEN).catch(err => {
+client.login(process.env.DISCORD_BOT_TOKEN).catch((err: any) => {
   console.error(err);
   process.exit();
 });
