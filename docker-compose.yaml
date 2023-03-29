@@ -2,6 +2,6 @@ version: '3.8'
 
 services:
   discord-ttl:
-    image: ayubun/discord-ttl:latest
+    image: ghcr.io/ayubun/discord-ttl:0
     env_file:
       - .env
