@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# # ================
+# # TERMINAL COLORS~
+# # ================
+# MOVE_UP=`tput cuu 1`
+# CLEAR_LINE=`tput el 1`
+# BOLD=`tput bold`
+# UNDERLINE=`tput smul`
+# RED_TEXT=`tput setaf 1`
+# GREEN_TEXT=`tput setaf 2`
+# YELLOW_TEXT=`tput setaf 3`
+# BLUE_TEXT=`tput setaf 4`
+# MAGENTA_TEXT=`tput setaf 5`
+# CYAN_TEXT=`tput setaf 6`
+# WHITE_TEXT=`tput setaf 7`
+# RESET=`tput sgr0`
+
+# echo "${RESET}${RED_TEXT}[${BOLD}ERROR${RESET}${RED_TEXT}]${RESET}${BOLD}${YELLOW_TEXT}"

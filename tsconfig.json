@@ -16,7 +16,7 @@
     "preserveConstEnums": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": [
     "./src/**/*",

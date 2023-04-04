@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# ================
-# TERMINAL COLORS~
-# ================
+# ======================
+#    TERMINAL COLORS~
+# ======================
 MOVE_UP=`tput cuu 1`
 CLEAR_LINE=`tput el 1`
 BOLD=`tput bold`
@@ -16,33 +16,27 @@ CYAN_TEXT=`tput setaf 6`
 WHITE_TEXT=`tput setaf 7`
 RESET=`tput sgr0`
 
+CURRENT_DIR=$(pwd)
+# source: https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # ======================================================
 #                     FLAGS LOGIC
 # Source: https://www.banjocode.com/post/bash/flags-bash
 # ======================================================
 SKIP_DOCKER=false
-SKIP_DOCKER_STRING=""
 SKIP_DOCKER_COMPOSE=false
-SKIP_DOCKER_COMPOSE_STRING=""
 SKIP_AUTO_UPDATER=false
-SKIP_AUTO_UPDATER_STRING=""
-BASH_SUFFIX_STRING=""
 while [ "$1" != "" ]; do
     case $1 in
     --skip-docker)
         SKIP_DOCKER=true
-        SKIP_DOCKER_STRING="--skip-docker "
-        BASH_SUFFIX_STRING=" -s -- "
         ;;
     --skip-docker-compose)
         SKIP_DOCKER_COMPOSE=true
-        SKIP_DOCKER_COMPOSE_STRING="--skip-docker-compose "
-        BASH_SUFFIX_STRING=" -s -- "
         ;;
     --skip-auto-updater)
         SKIP_AUTO_UPDATER=true
-        SKIP_AUTO_UPDATER_STRING="--skip-auto-updater "
-        BASH_SUFFIX_STRING=" -s -- "
         ;;
     esac
     shift # remove the current value for `$1` and use the next
@@ -55,7 +49,7 @@ ENV="Linux"
 if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
   echo "${RESET}${RED_TEXT}[${BOLD}ERROR${RESET}${RED_TEXT}]${RESET}${BOLD}${YELLOW_TEXT} It looks like you are trying to run this script on a non-unix environment.${RESET}"
   echo "        ${YELLOW_TEXT}Please note that this script is ${UNDERLINE}only${RESET}${YELLOW_TEXT} designed for use on Ubuntu/MacOS.${RESET}" 
-  exit 1
+  return 1
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   ENV="MacOS"
   # Make sure that Homebrew is installed / updated (used for docker/docker compose installations on mac)
@@ -67,19 +61,11 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 echo "${RESET}${YELLOW_TEXT}[${BOLD}OS Check${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} It looks like you're running this script on ${ENV}! Nice :)"
 
-NEW_ENV=false
-if ! [[ -f ".env" ]]; then
-  echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Env Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Creating .env file from .env.example...${RESET}" 
-  cp .env.example .env
-  NEW_ENV=true
-  echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Env Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} .env file created!${RESET}" 
-fi
-
 # ======================================================
 #                    DOCKER INSTALL
 # Source: https://docs.docker.com/engine/install/ubuntu/
 # ======================================================
-if [[ $SKIP_DOCKER == true ]]; then
+if [[ $SKIP_DOCKER == true ]] || [[ -x "$(command -v docker)" ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker installation!${RESET}" 
 else
   if [[ $ENV == "Linux" ]]; then
@@ -114,7 +100,7 @@ fi
 #             DOCKER COMPOSE INSTALL
 # Source: https://docs.docker.com/compose/install/
 # ================================================
-if [[ $SKIP_DOCKER_COMPOSE == true ]]; then
+if [[ $SKIP_DOCKER_COMPOSE == true ]] || [[ -x "$(command -v docker-compose)" ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker Compose installation!${RESET}" 
 else
   if [[ $ENV == "Linux" ]]; then
@@ -134,9 +120,9 @@ else
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done!${RESET}" 
 fi
 
-# ====================
-#     AUTO-UPDATER
-# ====================
+# ===================
+#  AUTO-UPDATER CRON
+# ===================
 # This just adds an entry to the crontab to run update-ttl.sh at a regular interval
 if [[ $SKIP_AUTO_UPDATER == true ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Auto-Updater Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Auto-Updater setup!${RESET}" 
@@ -144,11 +130,14 @@ else
   # source: https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
   SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
   # Remove any existing entry in the crontab
-  crontab -l | grep -v '/update-ttl.sh'  | crontab - &>/dev/null
+  crontab -l | grep -v '/bin/update-ttl.sh'  | crontab - &>/dev/null
   # Add update.sh to crontab
-  (crontab -l 2>/dev/null; echo "55 23 * * * ${SCRIPT_DIR}/update-ttl.sh") | crontab -
+  (crontab -l 2>/dev/null; echo "10 */6 * * * ${SCRIPT_DIR}/bin/update-ttl.sh") | crontab -
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Auto-Updater Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Added update-ttl.sh to crontab${RESET}" 
 fi
+
+# Return to the directory we initially ran the script from
+cd $CURRENT_DIR
 
 # ================
 #   FINAL PRINT

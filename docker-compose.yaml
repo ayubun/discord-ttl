@@ -4,5 +4,7 @@ services:
   discord-ttl:
     image: ghcr.io/ayubun/discord-ttl:1
     restart: always
+    volumes:
+      - ${PWD}/data:/usr/src/app/data
     env_file:
       - .env
