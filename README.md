@@ -4,7 +4,8 @@ Discord TTL is a simple Discord bot that protects privacy by deleting all server
 find a live version of this bot running at https://discord.gg/ayu
 
 Currently, Discord TTL is meant to be self-hosted; Self-hosting comes with a few benefits-- for one, you can guarantee that the bot won't do
-anything you wont expect. It also allows you to have ratelimits If you would like to set it up for your server, follow the steps below!
+anything you wont expect. It also allows you to have ratelimits independent of others so that messages can be deleted with a bit less delay.
+If you would like to set it up for your server, follow the steps below!
 
 
 # Steps to self-host
