@@ -1,11 +1,11 @@
-import { Client, Intents } from 'discord.js';
+import { Client, Partials } from 'discord.js';
 import dotenv from 'dotenv';
 import { continuallyRetrieveMessages } from './ttl';
 dotenv.config();
 
 export const client = new Client({
-  intents: [Intents.FLAGS.GUILDS],
-  partials: ['CHANNEL', 'MESSAGE'],
+  intents: ['Guilds'],
+  partials: [Partials.Channel, Partials.Message],
 });
 
 client.once('ready', () => {
