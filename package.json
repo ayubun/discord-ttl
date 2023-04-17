@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/app.js",
   "repository": "git@github.com:ayubun/discord-ttl.git",
-  "author": "Ayu <ayu@ayu.dev>",
+  "author": "ayubun <ayu@ayu.dev>",
   "license": "MIT",
   "precommit": [
     "yarn run lint",
@@ -14,13 +14,13 @@
   ],
   "dependencies": {
     "@types/sqlite3": "^3.1.8",
-    "discord.js": "^13.8.1",
-    "dotenv": "^16.0.0",
-    "eslint": "^8.2.0",
-    "pg": "^8.7.1",
+    "discord.js": "^14.9.0",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.38.0",
+    "pg": "^8.10.0",
     "sqlite3": "^5.1.6",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.4.4"
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   },
   "scripts": {
     "clean": "rm -rf ./dist",
@@ -35,15 +35,14 @@
     "newstart": "yarn build && yarn start"
   },
   "devDependencies": {
-    "@types/node": "^16.11.7",
-    "@types/pg": "^8.6.1",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.4.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
     "precommit": "^1.2.2",
-    "prettier": "^2.6.1",
-    "ts-node-dev": "^1.1.8"
+    "prettier": "^2.8.7",
+    "ts-node-dev": "^2.0.0"
   },
   "description": "A simple Discord bot to delete server messages older than a specified TTL (time-to-live)"
 }
