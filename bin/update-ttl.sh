@@ -14,7 +14,7 @@ RESET=`tput sgr0`
 CURRENT_DIR=$(pwd)
 # source: https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-cd ../$SCRIPT_DIR
+cd $SCRIPT_DIR && cd ..
 
 # ========================
 # UPSTREAM VERSION CHECKER
@@ -23,11 +23,12 @@ cd ../$SCRIPT_DIR
 # Reads the version number in package.json
 # src: https://gist.github.com/DarrenN/8c6a5b969481725a4413
 # + https://stackoverflow.com/questions/428109/extract-substring-in-bash to remove space in front
-CURRENT_VERSION=${$(cat package.json \
+CURRENT_VERSION=$(cat package.json \
   | grep version \
   | head -1 \
   | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g')#* }
+  | sed 's/[",]//g')
+CURRENT_VERSION=${CURRENT_VERSION#* }
 
 # Remove anything past the .'s in CURRENT_VERSION
 # src: https://stackoverflow.com/questions/428109/extract-substring-in-bash to remove space in front
@@ -35,11 +36,12 @@ CURRENT_MAJOR_VERSION=${CURRENT_VERSION%\.*\.*}
 RAW_CONTENT_URL=https://raw.githubusercontent.com/ayubun/discord-ttl/v${CURRENT_MAJOR_VERSION}
 
 # Using the major version, grab the latest package.json version number on the ttl repo
-UPSTREAM_VERSION=${$(curl -s ${RAW_CONTENT_URL}/package.json \
+UPSTREAM_VERSION=$(curl -s ${RAW_CONTENT_URL}/package.json \
   | grep version \
   | head -1 \
   | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g')#* }
+  | sed 's/[",]//g')
+UPSTREAM_VERSION=${UPSTREAM_VERSION#* }
 
 # We will check this JUST in case the major versions are mismatched (this shouldn't happen but /shrug ppl make mistakes)
 UPSTREAM_MAJOR_VERSION=${UPSTREAM_VERSION%\.*\.*}
@@ -87,6 +89,8 @@ if [[ $CURRENT_VERSION < $UPSTREAM_VERSION ]]; then
     echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Running updated setup.sh...${RESET}" 
     source ./setup.sh
   fi
+else
+  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} No upstream updates found. Local scripts & files should be up-to-date!${RESET}"
 fi
 
 echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling any new docker image(s)...${RESET}" 
