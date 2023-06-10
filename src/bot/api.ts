@@ -1,10 +1,34 @@
-import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits } from 'discord.js';
-import { client } from './app';
-import { getServerMessageTtlMillis } from './sqlite';
+import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits, User, Client, Partials } from 'discord.js';
+import { getMessageTtl } from '../database/api';
+
+export const client = new Client({
+  intents: ['Guilds'],
+  partials: [Partials.Channel, Partials.Message],
+});
+
+export function loginToDiscord() {
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) {
+    console.error('Discord token was not provided in the .env (i.e. DISCORD_BOT_TOKEN=token)');
+    console.error('To get a token, see: https://ayu.dev/r/discord-bot-token-guide');
+    console.error('Then, paste it into the .env file in the discord-ttl directory and restart.');
+    process.exit(1);
+  }
+
+  client.once('ready', () => {
+    console.log('discord-ttl has logged in to discord');
+    continuallyRetrieveMessages().catch(console.error);
+  });
+
+  client.login(token).catch((err: any) => {
+    console.error(err);
+    process.exit();
+  });
+}
 
 const lastDeletedMessages: Record<string, string> = {};
 
-export async function continuallyRetrieveMessages(): Promise<void> {
+async function continuallyRetrieveMessages(): Promise<void> {
   while (true) {
     await retrieveMessages();
   }
@@ -57,8 +81,16 @@ function canGetAndDeleteMessages(channel: GuildTextBasedChannel): boolean {
   return true;
 }
 
-function isMessageOlderThanTtl(serverId: string, message: { createdAt: { getTime: () => number } }): boolean {
-  return message.createdAt.getTime() < Date.now() - getServerMessageTtlMillis(serverId);
+function isMessageOlderThanTtl(
+  serverId: string,
+  channelId: string,
+  message: { createdAt: { getTime: () => number }; author: User },
+): boolean {
+  const messageTtl = getMessageTtl(serverId, channelId, message.author.id);
+  if (!messageTtl) {
+    return false;
+  }
+  return message.createdAt.getTime() < Date.now() - messageTtl * 1000;
 }
 
 function canMessageBeBulkDeleted(message: { createdAt: { getTime: () => number } }): boolean {
@@ -78,8 +110,8 @@ async function handleDeletesForNonBulkDeletableMessages(
   return Promise.all(
     messages
       .filter(
-        (message: { createdAt: { getTime: () => number } }) =>
-          isMessageOlderThanTtl(guildId, message) && !canMessageBeBulkDeleted(message),
+        (message: { createdAt: { getTime: () => number }; author: User }) =>
+          isMessageOlderThanTtl(guildId, channelId, message) && !canMessageBeBulkDeleted(message),
       )
       .map(async (message: { delete: () => any; id: string }) => {
         await message.delete();
@@ -98,8 +130,8 @@ async function handleDeletesForBulkDeletableMessages(
   messages: Collection<string, Message<boolean>>,
 ): Promise<void | Collection<string, Message<boolean>>> {
   const messagesToDelete = messages.filter(
-    (message: { createdAt: { getTime: () => number } }) =>
-      isMessageOlderThanTtl(guildId, message) && canMessageBeBulkDeleted(message),
+    (message: { createdAt: { getTime: () => number }; author: User }) =>
+      isMessageOlderThanTtl(guildId, channel.id, message) && canMessageBeBulkDeleted(message),
   );
   if (messagesToDelete.size === 0) {
     return;
