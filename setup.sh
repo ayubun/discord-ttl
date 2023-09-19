@@ -42,6 +42,12 @@ while [ "$1" != "" ]; do
     shift # remove the current value for `$1` and use the next
 done
 
+# Ensure the .env exists
+if [[ ! -f ".env" ]]; then
+  NEW_DOTENV=true
+  cp .env.example .env
+fi
+
 # =======================================
 # OS CHECK & HOMEBREW INSTALL (for MacOS)
 # =======================================
@@ -146,7 +152,7 @@ echo ""
 echo "${RESET}${BOLD}${GREEN_TEXT}              Automated setup complete!${RESET}"
 echo "${RESET}${BOLD}${GREEN_TEXT}                    ૮ ˶ᵔ ᵕ ᵔ˶ ა${RESET}"
 echo ""
-if [[ $NEW_ENV == true ]]; then
+if [[ $NEW_DOTENV == true ]]; then
   echo "${RESET}${YELLOW_TEXT}      Be sure to place a Discord bot token in the${RESET}"
   echo "${RESET}${YELLOW_TEXT}      .env file where it says ${BOLD}DISCORD_BOT_TOKEN=${RESET}"
   echo "${RESET}${YELLOW_TEXT}       ${UNDERLINE}before${RESET}${YELLOW_TEXT} starting the bot. You can do this${RESET}"
