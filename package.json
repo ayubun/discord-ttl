@@ -1,6 +1,6 @@
 {
   "name": "discord-ttl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/app.js",
   "repository": "git@github.com:ayubun/discord-ttl.git",
   "author": "ayubun <ayu@ayu.dev>",
