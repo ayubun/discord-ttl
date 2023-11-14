@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import { loginToDiscord } from './bot/api';
+import { loginToDiscordAndBeginDeleting } from './bot/api';
 import { applyDatabaseMigrations } from './database/api';
 dotenv.config();
 
 applyDatabaseMigrations();
-loginToDiscord();
+loginToDiscordAndBeginDeleting();

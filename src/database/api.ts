@@ -7,14 +7,12 @@ dotenv.config();
 // data can be cleaned up (without risk of unintentional deletion during
 // outages).
 const db = new Database('data/discord-ttl.db');
-db.on('error', function (error) {
-  console.error('database error encountered: ', error);
+db.on('error', err => {
+  console.error('Database error encountered:', err);
 });
 
 // some config values
-const deprecatedDefaultTtlString = process.env.DEFAULT_MESSAGE_TTL; // deprecated
 const maxTtlString = process.env.MAXIMUM_MESSAGE_TTL_SECONDS;
-const deprecatedDefaultTtl = deprecatedDefaultTtlString ? Number(deprecatedDefaultTtlString) : undefined; // deprecated
 const maxTtl = maxTtlString ? Number(maxTtlString) : undefined;
 
 export function applyDatabaseMigrations() {
@@ -37,24 +35,25 @@ FROM ttl_settings
 WHERE server_id = ?, channel_id = ?, user_id = ?;
 `;
 
-function executeMessageTtlSelectQuery(
+function getMessageTtlQuery(
   serverId: string,
   channelId: string | null,
   userId: string | null,
-): number | undefined {
-  let ttl: number | undefined;
-  db.get(messageTtlSelectQuery, [serverId, channelId, userId], (err, row: { message_ttl: number | undefined }) => {
-    if (err) {
-      return;
-    }
-    if (row !== undefined) {
-      ttl = row.message_ttl;
-    }
+): Promise<number | undefined> {
+  return new Promise((resolve, reject) => {
+    db.get(messageTtlSelectQuery, [serverId, channelId, userId], (err, row: { message_ttl: number | undefined }) => {
+      if (err) {
+        reject(`Encountered database error: ${err.message}`);
+      }
+      if (row !== undefined) {
+        resolve(row.message_ttl);
+      }
+      reject(`No row found for (${serverId}, ${channelId}, ${userId})`);
+    });
   });
-  return ttl;
 }
 
-export function getMessageTtl(serverId: string, channelId: string, userId: string): number | undefined {
+export async function getMessageTtl(serverId: string, channelId: string, userId: string): Promise<number | undefined> {
   function capMessageTtl(ttl: number): number | undefined {
     if (maxTtl !== undefined && ttl > maxTtl) {
       return maxTtl;
@@ -67,28 +66,24 @@ export function getMessageTtl(serverId: string, channelId: string, userId: strin
   }
 
   // user channel settings
-  let ttl = executeMessageTtlSelectQuery(serverId, channelId, userId);
+  let ttl = await getMessageTtlQuery(serverId, channelId, userId);
   if (ttl !== undefined) {
     return capMessageTtl(ttl);
   }
   // user server settings
-  ttl = executeMessageTtlSelectQuery(serverId, null, userId);
+  ttl = await getMessageTtlQuery(serverId, null, userId);
   if (ttl !== undefined) {
     return capMessageTtl(ttl);
   }
   // server channel settings
-  ttl = executeMessageTtlSelectQuery(serverId, channelId, null);
+  ttl = await getMessageTtlQuery(serverId, channelId, null);
   if (ttl !== undefined) {
     return capMessageTtl(ttl);
   }
   // server settings
-  ttl = executeMessageTtlSelectQuery(serverId, null, null);
+  ttl = await getMessageTtlQuery(serverId, null, null);
   if (ttl !== undefined) {
     return capMessageTtl(ttl);
-  }
-  // global bot settings
-  if (deprecatedDefaultTtl !== undefined) {
-    return capMessageTtl(deprecatedDefaultTtl);
   }
   return undefined;
 }
