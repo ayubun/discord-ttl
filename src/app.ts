@@ -3,5 +3,5 @@ import { loginToDiscordAndBeginDeleting } from './bot/api';
 import { applyDatabaseMigrations } from './database/api';
 dotenv.config();
 
-applyDatabaseMigrations();
+await applyDatabaseMigrations();
 loginToDiscordAndBeginDeleting();

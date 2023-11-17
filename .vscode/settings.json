@@ -5,7 +5,7 @@
   "prettier.enable": true,
   "prettier.configPath": "./.prettierrc.yaml",
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": true,
     "editor.rulers": [120]
   }

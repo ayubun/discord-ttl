@@ -1,6 +1,6 @@
 import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getMessageTtl } from '../database/api';
-import { client } from './api';
+import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
 
@@ -11,7 +11,7 @@ export async function continuallyRetrieveMessages(): Promise<void> {
 }
 
 async function retrieveMessages(): Promise<void> {
-  for (const channel of client.channels.cache.values()) {
+  for (const channel of bot.channels.cache.values()) {
     if (channel.isDMBased() || !channel.isTextBased()) {
       continue;
     }

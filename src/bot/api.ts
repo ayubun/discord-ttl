@@ -1,6 +1,6 @@
 import { Events, Partials } from 'discord.js';
 import { continuallyRetrieveMessages } from './core';
-import { CommandClient } from './commandClient';
+import { BunnyClient } from './bunny';
 
 function getToken(): string {
   const token = process.env.DISCORD_BOT_TOKEN;
@@ -13,29 +13,21 @@ function getToken(): string {
   return token;
 }
 
-export const client = new CommandClient({
+export const bot = new BunnyClient({
   intents: ['Guilds'],
   partials: [Partials.Channel, Partials.Message],
 });
 
 export function loginToDiscordAndBeginDeleting() {
-  client.once('ready', () => {
-    console.log('TTL has logged in to Discord');
-
-    client.deployCommands().catch((err: any) => {
-      console.error('TTL encountered a fatal error while deploying commands:', err);
-      process.exit(1);
-    });
-
+  bot.once('ready', () => {
+    console.log('TTL has logged in to Discord and will now continually retrieve messages');
     continuallyRetrieveMessages().catch((err: any) => {
       console.error('TTL encountered a fatal error in the core loop:', err);
       process.exit(1);
     });
   });
 
-  client.on(Events.InteractionCreate, async interaction => client.handleInteraction(interaction));
-
-  client.login(getToken()).catch((err: any) => {
+  bot.login(getToken()).catch((err: any) => {
     console.error('TTL encountered a fatal error while logging in:', err);
     process.exit(1);
   });
