@@ -3,5 +3,6 @@ import { loginToDiscordAndBeginDeleting } from './bot/api';
 import { applyDatabaseMigrations } from './database/api';
 dotenv.config();
 
-await applyDatabaseMigrations();
-loginToDiscordAndBeginDeleting();
+applyDatabaseMigrations()
+  .then(() => loginToDiscordAndBeginDeleting())
+  .catch(console.error);

@@ -6,20 +6,16 @@
   "author": "ayubun <ayu@ayu.dev>",
   "license": "MIT",
   "precommit": [
-    "yarn run lint",
-    "yarn run pretty"
+    "yarn run lint-fix",
+    "yarn run pretty-fix"
   ],
   "extends": [
     "plugin:you-dont-need-momentjs/recommended"
   ],
   "dependencies": {
-    "@types/sqlite3": "^3.1.8",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
-    "eslint": "^8.38.0",
-    "pg": "^8.10.0",
     "sqlite3": "^5.1.6",
-    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
@@ -31,13 +27,14 @@
     "start": "yarn build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
     "docker:build": "docker build --tag discord-ttl .",
-    "build": "yarn tsc",
-    "newstart": "yarn build && yarn start"
+    "build": "yarn tsc"
   },
   "devDependencies": {
+    "@types/sqlite3": "^3.1.8",
     "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.38.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
     "precommit": "^1.2.2",

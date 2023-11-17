@@ -1,6 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-} from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 
 const json_data = {
   description: 'Set the TTL for the current channel',

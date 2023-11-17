@@ -1,4 +1,4 @@
-import { Events, Partials } from 'discord.js';
+import { Partials } from 'discord.js';
 import { continuallyRetrieveMessages } from './core';
 import { BunnyClient } from './bunny';
 

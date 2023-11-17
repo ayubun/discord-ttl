@@ -1,8 +1,16 @@
+import fs from 'fs';
 import { Database } from 'sqlite3';
 
 // todo: have the database store when guild leaves occur, so that guild
 // data can be cleaned up (without risk of unintentional deletion during
 // outages).
+const db_path = 'data/discord-ttl.db';
+if (!fs.existsSync('data')) {
+  fs.mkdirSync('data');
+}
+if (!fs.existsSync(db_path)) {
+  fs.closeSync(fs.openSync(db_path, 'wx'));
+}
 export const db = new Database('data/discord-ttl.db');
 db.on('error', err => {
   console.error('Encountered database error:', err);
