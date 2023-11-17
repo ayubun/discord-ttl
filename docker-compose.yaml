@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   discord-ttl:
-    image: ghcr.io/ayubun/discord-ttl:1
+    build: .
     restart: always
     volumes:
       - ${PWD}/data:/usr/src/app/data

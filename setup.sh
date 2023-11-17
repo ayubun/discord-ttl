@@ -71,7 +71,7 @@ echo "${RESET}${YELLOW_TEXT}[${BOLD}OS Check${RESET}${YELLOW_TEXT}]${RESET}${BOL
 #                    DOCKER INSTALL
 # Source: https://docs.docker.com/engine/install/ubuntu/
 # ======================================================
-if [[ $SKIP_DOCKER == true ]] || [[ -x "$(command -v docker)" ]]; then
+if [[ $SKIP_DOCKER == true ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker installation!${RESET}" 
 else
   if [[ $ENV == "Linux" ]]; then
@@ -106,7 +106,7 @@ fi
 #             DOCKER COMPOSE INSTALL
 # Source: https://docs.docker.com/compose/install/
 # ================================================
-if [[ $SKIP_DOCKER_COMPOSE == true ]] || [[ -x "$(command -v docker-compose)" ]]; then
+if [[ $SKIP_DOCKER_COMPOSE == true ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker Compose installation!${RESET}" 
 else
   if [[ $ENV == "Linux" ]]; then
@@ -119,7 +119,7 @@ else
   if [[ $ENV == "MacOS" ]]; then
     brew install docker-compose
   else
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
     sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
   fi
