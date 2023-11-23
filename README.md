@@ -1,12 +1,19 @@
 # Overview
 
-Discord TTL is a simple Discord bot that protects privacy by deleting all server messages older than a given TTL (time-to-live). You can
-find a live version of this bot running at https://discord.gg/ayu
+Discord TTL is a simple Discord bot that protects privacy by deleting all server messages older than a given TTL (time-to-live).
 
-Currently, Discord TTL is meant to be self-hosted; Self-hosting comes with a few benefits-- for one, you can guarantee that the bot won't do
-anything you wont expect. It also allows you to have ratelimits independent of others so that messages can be deleted with a bit less delay.
-If you would like to set it up for your server, follow the steps below!
+### Updater Architecture
 
+Discord TTL comes with auto-updates so that hosters can get all of the latest features automatically upon new GitHub releases.
+Below is an architecture diagram of how the updater works (with `v1.0.1` as an example):
+
+![architecture](https://github.com/ayubun/discord-ttl/assets/49354780/6de91184-ef05-4c69-b397-cda015e6601c)
+
+There is currently no officially-maintained public Discord TTL bot. You can
+find a live (but private) version of this bot running at https://discord.gg/ayu.
+
+If you would like to self-host Discord TTL, follow the steps below! Once setup, 
+the Discord TTL bot will work across multiple servers. Slower deletions may occur if the bot is added to many servers (20+).
 
 # Steps to self-host
 
