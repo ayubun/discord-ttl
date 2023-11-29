@@ -28,9 +28,9 @@ export function executeQuery(sql: string): Promise<void> {
 }
 
 const selectMessageTtlQueryString = `
-SELECT message_ttl
-  FROM ttl_settings
-  WHERE server_id = ?, channel_id = ?, user_id = ?;
+SELECT message_ttl 
+  FROM ttl_settings 
+  WHERE server_id = ? AND channel_id = ? AND user_id = ?;
 `;
 
 export function selectMessageTtlQuery(
@@ -59,7 +59,7 @@ export function selectMessageTtlQuery(
 const updateMessageTtlQueryString = `
 UPDATE ttl_settings
   SET message_ttl = ?
-  WHERE server_id = ?, channel_id = ?, user_id = ?;
+  WHERE server_id = ? AND channel_id = ? AND user_id = ?;
 `;
 
 export function updateMessageTtlQuery(
@@ -80,7 +80,7 @@ export function updateMessageTtlQuery(
 
 const deleteMessageTtlQueryString = `
 DELETE ttl_settings
-  WHERE server_id = ?, channel_id = ?, user_id = ?;
+  WHERE server_id = ? AND channel_id = ? AND user_id = ?;
 `;
 
 export function deleteMessageTtlQuery(

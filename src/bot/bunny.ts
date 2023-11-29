@@ -165,6 +165,7 @@ export class BunnyClient extends Client {
   private async handleInteraction(interaction: Interaction<CacheType>) {
     if (!interaction.isChatInputCommand()) return;
 
+    console.log('received cmd: ', interaction.commandName);
     const full_command_name: string[] = [interaction.commandName];
     function traverseOptionsRecursively(current_data: readonly CommandInteractionOption[] | undefined): void {
       if (current_data === undefined) {
@@ -183,6 +184,7 @@ export class BunnyClient extends Client {
     }
     // Fill the `full_command_name` array based on a recursive traversal of the interaction options
     traverseOptionsRecursively(interaction.options.data);
+    console.log('got cmd: ', full_command_name);
 
     // Use the `full_command_name` to power logs & command discovery
     let command = this.command_tree;
@@ -197,6 +199,8 @@ export class BunnyClient extends Client {
       console.error(`BunnyClient could not execute the following command: ${full_command_name}`);
       return;
     }
+
+    console.log('got final cmd: ', command);
 
     // Cast and execute if the command is present in our command tree
     try {
@@ -282,6 +286,7 @@ class BunnyCommand {
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
+    console.log(`Executing command: ${this.getName()}`);
     await this.execute_fn(interaction);
   }
 }
