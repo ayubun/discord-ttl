@@ -71,6 +71,10 @@ echo "${RESET}${YELLOW_TEXT}[${BOLD}OS Check${RESET}${YELLOW_TEXT}]${RESET}${BOL
 #                    DOCKER INSTALL
 # Source: https://docs.docker.com/engine/install/ubuntu/
 # ======================================================
+if docker version &>/dev/null && docker compose version &>/dev/null; then
+    echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Docker installation detected${RESET}" 
+    SKIP_DOCKER=true
+fi
 if [[ $SKIP_DOCKER == true ]]; then
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker installation!${RESET}" 
 else
@@ -93,37 +97,14 @@ else
   fi
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Installing Docker...${RESET}" 
   if [[ $ENV == "MacOS" ]]; then
-    brew install --cask docker
+    brew uninstall --cask docker --force &>/dev/null
+    brew install --cask docker --force
   else
     # Install Docker Engine
     sudo apt-get update -y
     sudo apt-get install docker-ce docker-ce-cli containerd.io -y
   fi
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done!${RESET}" 
-fi
-
-# ================================================
-#             DOCKER COMPOSE INSTALL
-# Source: https://docs.docker.com/compose/install/
-# ================================================
-if [[ $SKIP_DOCKER_COMPOSE == true ]]; then
-  echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Skipping Docker Compose installation!${RESET}" 
-else
-  if [[ $ENV == "Linux" ]]; then
-    # Remove any old files
-    echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Preparing for Docker Compose install...${RESET}" 
-    sudo rm /usr/local/bin/docker-compose
-    sudo rm /usr/bin/docker-compose
-  fi
-  echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Installing Docker Compose...${RESET}" 
-  if [[ $ENV == "MacOS" ]]; then
-    brew install docker-compose
-  else
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-  fi
-  echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Docker Compose Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done!${RESET}" 
 fi
 
 # ===================
@@ -167,9 +148,9 @@ if [[ $NEW_DOTENV == true ]]; then
 fi
 echo "${RESET}${BOLD}${CYAN_TEXT}            To start Discord TTL, type${RESET}${CYAN_TEXT}:${RESET}"
 echo ""
-echo "${RESET}${WHITE_TEXT}               docker-compose up -d${RESET}"
+echo "${RESET}${WHITE_TEXT}               docker compose up -d${RESET}"
 echo ""
 echo "${RESET}${BOLD}${CYAN_TEXT}             To check the logs, type${RESET}${CYAN_TEXT}:${RESET}"
 echo ""
-echo "${RESET}${WHITE_TEXT}               docker-compose logs${RESET}"
+echo "${RESET}${WHITE_TEXT}               docker compose logs${RESET}"
 echo ""

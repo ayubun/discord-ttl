@@ -94,9 +94,9 @@ else
 fi
 
 echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling any new docker image(s)...${RESET}" 
-docker-compose pull
+docker compose pull
 echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Upping container(s)...${RESET}"
-docker-compose up -d
+docker compose up -d
 echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done! Discord TTL should now be up-to-date :)${RESET}"
 
 # Return to whatever location this script was intitally run from for UX purposes

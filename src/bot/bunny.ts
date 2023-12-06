@@ -252,12 +252,12 @@ class BunnyCommand {
     assert(
       json_data_type === 'object',
       `BunnyCommand could not be created for ${file_path}: \`json_data\` must be type 'object'` +
-        ` (found: ${json_data_type})`,
+      ` (found: ${json_data_type})`,
     );
     assert(
       execute_fn_type === 'function',
       `BunnyCommand could not be created for ${file_path}: \`execute_fn\` must be type 'function'` +
-        ` (found: ${execute_fn_type})`,
+      ` (found: ${execute_fn_type})`,
     );
     const json_data = command_file.json_data;
     // If the name is missing from the json data, we will imply the command name from the file name
