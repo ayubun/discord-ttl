@@ -29,11 +29,13 @@ perfectly-capable $3/month option that might be within budget for most: https://
 ## Once you have a suitable location to host the bot
 Clone the repository to a desired location (such as your home directory):
 ```bash
-cd ~ && git clone https://github.com/ayubun/discord-ttl
+cd ~
+git clone https://github.com/ayubun/discord-ttl
 ```
-Then, navigate to the newly-created `discord-ttl` directory:
+Then, navigate to the newly-created `discord-ttl` directory, and checkout the `v1` branch:
 ```bash
-cd discord-ttl
+cd ~/discord-ttl
+git checkout v1
 ```
 Lastly, run the `setup.sh` script. Follow any instructions provided by the script:
 ```bash
