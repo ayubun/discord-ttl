@@ -1,8 +1,8 @@
 /**
  * bunny.ts is a TypeScript file that dynamically handles parity between
- * compatible `command/` files and the Discord API. The API provides a `BunnyClient`
- * wrapper for the Discord.js `Client` class and is responsible for registering,
- * routing, and executing bot commands.
+ * compatible `command/` files and the Discord API. The bunny.ts 'API' provides
+ * a `BunnyClient` wrapper for the Discord.js `Client` class, which is
+ * responsible for registering, routing, and executing application commands.
  */
 import fs from 'node:fs';
 import path from 'node:path';

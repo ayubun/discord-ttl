@@ -43,5 +43,5 @@
     "prettier": "^2.8.7",
     "ts-node-dev": "^2.0.0"
   },
-  "description": "A simple Discord bot to delete server messages older than a specified TTL (time-to-live)"
+  "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time-to-live)"
 }
