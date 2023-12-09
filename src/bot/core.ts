@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getMessageTtl } from '../database/api';
 import { bot } from './api';
@@ -11,32 +12,31 @@ export async function continuallyRetrieveMessages(): Promise<void> {
 }
 
 async function retrieveMessages(): Promise<void> {
-  return;
-  // for (const channel of bot.channels.cache.values()) {
-  //   if (channel.isDMBased() || !channel.isTextBased()) {
-  //     continue;
-  //   }
-  //   if (!canGetAndDeleteMessages(channel)) {
-  //     continue;
-  //   }
-  //   if (!lastDeletedMessages[channel.id]) {
-  //     lastDeletedMessages[channel.id] = channel.id;
-  //   }
-  //   try {
-  //     const guildId: string = channel.guildId;
-  //     const messages: Collection<string, Message<boolean>> = await channel.messages.fetch({
-  //       after: lastDeletedMessages[channel.id],
-  //       limit: 100,
-  //     });
-  //     const deletableMessages = await collectDeletableMessages(guildId, channel.id, messages);
-  //     const awaitedPromises = await handleDeletesForNonBulkDeletableMessages(guildId, channel.id, deletableMessages);
-  //     if (awaitedPromises.length === 0) {
-  //       await handleDeletesForBulkDeletableMessages(guildId, channel, deletableMessages);
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
+  for (const channel of bot.channels.cache.values()) {
+    if (channel.isDMBased() || !channel.isTextBased()) {
+      continue;
+    }
+    if (!canGetAndDeleteMessages(channel)) {
+      continue;
+    }
+    if (!lastDeletedMessages[channel.id]) {
+      lastDeletedMessages[channel.id] = channel.id;
+    }
+    try {
+      const guildId: string = channel.guildId;
+      const messages: Collection<string, Message<boolean>> = await channel.messages.fetch({
+        after: lastDeletedMessages[channel.id],
+        limit: 100,
+      });
+      const deletableMessages = await collectDeletableMessages(guildId, channel.id, messages);
+      const awaitedPromises = await handleDeletesForNonBulkDeletableMessages(guildId, channel.id, deletableMessages);
+      if (awaitedPromises.length === 0) {
+        await handleDeletesForBulkDeletableMessages(guildId, channel, deletableMessages);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 function canGetAndDeleteMessages(channel: GuildTextBasedChannel): boolean {

@@ -32,9 +32,6 @@ while [ "$1" != "" ]; do
     --skip-docker)
         SKIP_DOCKER=true
         ;;
-    --skip-docker-compose)
-        SKIP_DOCKER_COMPOSE=true
-        ;;
     --skip-auto-updater)
         SKIP_AUTO_UPDATER=true
         ;;
@@ -154,3 +151,8 @@ echo "${RESET}${BOLD}${CYAN_TEXT}             To check the logs, type${RESET}${C
 echo ""
 echo "${RESET}${WHITE_TEXT}               docker compose logs${RESET}"
 echo ""
+if [[ $ENV == "MacOS" && $SKIP_DOCKER == false ]]; then
+  echo "${RESET}${YELLOW_TEXT}  Since you are on Mac OS, you may need to start the${RESET}"
+  echo "${RESET}${YELLOW_TEXT}  Docker app first via Cmd + Space -> Typing \"Docker\"${RESET}"
+  echo ""
+fi
