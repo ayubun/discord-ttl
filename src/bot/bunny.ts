@@ -32,6 +32,7 @@ export class BunnyClient extends Client {
     // listen for 'ready' event (which is sent when the bot connects to the discord api) because we
     // use some information returned from the api to register our commands (such as the client id)
     super.on('ready', () => {
+      BunnyLogger.info('Setting up application commands...');
       this.deployCommands()
         .then(() => {
           // this routes our interactions (a.k.a. application commands) to our own handler methods c:
@@ -144,21 +145,22 @@ export class BunnyClient extends Client {
     const payload = { body: commands };
     const rest = new REST().setToken(this.token);
     BunnyLogger.debug(
-      `Sending \`PUT ${Routes.applicationCommands(this.user.id)}\` with the following payload: ${JSON.stringify(payload, undefined, 2)}`
+      `Sending 'PUT ${Routes.applicationCommands(this.user.id)}' with the following payload:`,
+      `${JSON.stringify(payload, undefined, 2)}`
     );
     // we await (instead of `.then().catch()`) so that the error will bubble up to the caller
     const data: any = await rest.put(Routes.applicationCommands(this.user.id), payload);
     assert(
       data.length === commands.length,
-      `Expected to update ${commands.length} commands but ${data.length} were successful.`
+      `Expected to update ${commands.length} command${commands.length === 1 ? '' : 's'} but`
+      + ` ${data.length} ${data.length === 1 ? 'was' : 'were'} successful.`
     );
-    BunnyLogger.debug(`Successfully PUT ${commands.length} commands to the Discord API!`);
+    BunnyLogger.debug(`Successfully PUT ${commands.length} command${commands.length === 1 ? '' : 's'} to the Discord API!`);
   }
 
   private async handleInteraction(interaction: Interaction<CacheType>) {
     if (!interaction.isChatInputCommand()) return;
 
-    BunnyLogger.debug('received cmd: ', interaction.commandName);
     const full_command_name: string[] = [interaction.commandName];
     function traverseOptionsRecursively(current_data: readonly CommandInteractionOption[] | undefined): void {
       if (current_data === undefined) {
@@ -177,13 +179,13 @@ export class BunnyClient extends Client {
     }
     // Fill the `full_command_name` array based on a recursive traversal of the interaction options
     traverseOptionsRecursively(interaction.options.data);
-    BunnyLogger.debug('The following command has been invoked by a user: /', full_command_name);
+    BunnyLogger.debug(`Command '/${full_command_name.join(' ')}' invoked by user ${interaction.user.id}`);
 
     // Use the `full_command_name` to power logs & command discovery
     let command = this.command_tree;
     full_command_name.forEach(command_name => {
       if (!(command_name in command)) {
-        BunnyLogger.error(`Missing '${command_name}' from the following command: ${full_command_name}`);
+        BunnyLogger.error(`Invariant: Missing '${command_name}' from command '/${full_command_name.join(' ')}'`);
         // We will ignore this because it is likely that our command tree does not match what is in the Discord API.
         // It is *technically* possible to reach this state if the command tree is updated recently, since the
         // Discord API can take an hour to update global commands.
@@ -192,19 +194,17 @@ export class BunnyClient extends Client {
       command = command[command_name];
     });
     if (!BunnyCommand.isBunnyCommand(command)) {
-      BunnyLogger.error(`Could not execute the following command: ${full_command_name}`);
+      BunnyLogger.error(`Invariant: Command '/${full_command_name.join(' ')}' is not a BunnyCommand`);
       // Same issue as above. This can happen if the command tree is updated recently.
       // It shouldn't happen regularly, though
       return;
     }
-
-    BunnyLogger.debug('got final cmd: ', command);
-
     // Cast and execute if the command is present in our command tree
     try {
       await command.execute(interaction);
+      BunnyLogger.debug(`Command '/${command.getFullCommandName()}' successfully executed for user ${interaction.user.id}`);
     } catch (error) {
-      BunnyLogger.error(`Could not execute command ${command.getName()}:`, error);
+      BunnyLogger.error(`Command '/${command.getFullCommandName()}' failed for user ${interaction.user.id}:`, error);
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
       } else {
@@ -218,76 +218,103 @@ export class BunnyClient extends Client {
  * `BunnyCommand` is a wrapper for command files that can be executed by the `BunnyClient`
  */
 class BunnyCommand {
-  private json_data: Record<string, any>;
-  private execute_fn: CallableFunction;
-  private full_command_name: string[];
+  private data: Record<string, any>;
+  private onExecute: CallableFunction;
+  private fullCommandName: string[];
 
-  public constructor(json_data: Record<string, any>, execute_fn: CallableFunction, full_command_name: string[]) {
-    this.json_data = json_data;
-    this.execute_fn = execute_fn;
-    this.full_command_name = full_command_name;
+  public constructor(data: Record<string, any>, executeFunction: CallableFunction, fullCommandName: string[]) {
+    this.data = data;
+    this.onExecute = executeFunction;
+    this.fullCommandName = fullCommandName;
   }
 
   public static isBunnyCommand(command: any): command is BunnyCommand {
     return (
       command &&
-      'json_data' in command &&
-      (command as BunnyCommand).json_data !== undefined &&
-      'execute_fn' in command &&
-      (command as BunnyCommand).execute_fn !== undefined
+      'data' in command &&
+      (command as BunnyCommand).data !== undefined &&
+      'onExecute' in command &&
+      (command as BunnyCommand).onExecute !== undefined
     );
   }
 
-  public static fromFile(file_path: string): BunnyCommand {
+  private static assertCommandDataIsValid(data: Record<string, any>) {
+    assert('description' in data, `Missing 'description' from command data: ${JSON.stringify(data, undefined, 2)}`);
+    assert(
+      data.description.length >= 1 && data.description.length <= 100,
+      `'description' must be between 1 and 100 characters (found ${data.description.length}): ${JSON.stringify(data, undefined, 2)}`
+    );
+    if ('options' in data) {
+      const options = data.options;
+      assert(Array.isArray(options), `'options' must be an array (found type: ${typeof options})`);
+      for (const option of options.values()) {
+        assert(typeof option === 'object', `'option' was not resolvable as json: ${String(option)}`);
+        assert('description' in option, `Missing 'description' from 'option': ${JSON.stringify(option, undefined, 2)}`);
+        assert(
+          option.description.length >= 1 && option.description.length <= 100,
+          `Option 'description' must be between 1 and 100 characters (found ${option.description.length}): ${JSON.stringify(option, undefined, 2)}`
+        );
+      }
+    }
+  }
+
+  public static fromFile(filePath: string): BunnyCommand {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const command_file = require(file_path);
+      const commandFile = require(filePath);
       assert(
-        'json_data' in command_file,
-        `Missing \`json_data\` export`,
+        'data' in commandFile,
+        `Missing \`data\` export (expected type: json)`,
       );
       assert(
-        'execute_fn' in command_file,
-        `Missing \`execute_fn\` export`,
+        'onExecute' in commandFile,
+        `Missing \`onExecute\` export (expected type: async function)`,
       );
+      const jsonData = commandFile.data;
+      const onExecute = commandFile.onExecute;
       // Type checking
-      const json_data_type = typeof command_file.json_data;
-      const execute_fn_type = typeof command_file.execute_fn;
+      const jsonDataType = typeof jsonData;
+      const onExecuteType = typeof onExecute;
       assert(
-        json_data_type === 'object',
-        `\`json_data\` must be type 'object' (found: ${json_data_type})`,
+        jsonDataType === 'object',
+        `\`data\` type must be json (expected type: 'object') (found type: ${jsonDataType})`,
       );
       assert(
-        execute_fn_type === 'function',
-        `\`execute_fn\` must be type 'function' (found: ${execute_fn_type})`,
+        onExecuteType === 'function',
+        `\`onExecute\` type must be an async function (expected type: 'function') (found type: '${onExecuteType}')`,
       );
-      const json_data = command_file.json_data;
-      const full_command_name = file_path.substring(file_path.indexOf('bot/commands/') + 13, file_path.lastIndexOf('.js')).split('/');
+      const full_command_name = filePath.substring(filePath.indexOf('bot/commands/') + 13, filePath.lastIndexOf('.js')).split('/');
       // If the name is present in the json data, we will force the command name to be the specified name
-      if ('name' in json_data) {
+      if ('name' in jsonData) {
         full_command_name.pop();
-        full_command_name.push(String(json_data.name));
+        full_command_name.push(String(jsonData.name));
+      } else {
+        jsonData.name = full_command_name[full_command_name.length - 1];
       }
-      BunnyLogger.debug(`Created BunnyCommand for command /${full_command_name.join(' ')}`);
-      return new BunnyCommand(json_data as Record<string, any>, command_file.execute_fn as CallableFunction, full_command_name);
+      BunnyCommand.assertCommandDataIsValid(jsonData as Record<string, any>);
+      BunnyLogger.debug(`Created BunnyCommand for command '/${full_command_name.join(' ')}'`);
+      return new BunnyCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
     } catch (err) {
-      BunnyLogger.error(`Could not create BunnyCommand from file ${file_path}:`, String(err));
+      BunnyLogger.error(`Could not create BunnyCommand from file ${filePath}:`, String(err));
       BunnyLogger.error('This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.');
       process.exit(1);
     }
   }
 
+  public getFullCommandName(): string {
+    return this.fullCommandName.join(' ');
+  }
+
   public getName(): string {
-    return this.full_command_name.join(' ');
+    return this.data.name;
   }
 
   public getJsonData(): Record<string, any> {
-    return this.json_data;
+    return this.data;
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
-    BunnyLogger.debug(`Executing command: /${this.getName()}`);
-    await this.execute_fn(interaction);
+    await this.onExecute(interaction);
   }
 }
 
@@ -296,7 +323,7 @@ class BunnyCommand {
  * bunny.ts uses it's own simple logger so that it can be used in other projects.
  */
 class BunnyLogger {
-  private static DEBUG_LOGGING = false;
+  private static DEBUG_LOGGING = true;
   private static INFO_LOGGING = true;
 
   // I got the colour codes from here: https://ss64.com/nt/syntax-ansi.html

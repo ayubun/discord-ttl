@@ -1,17 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getMessageTtl } from '../database/api';
+import { Logger } from '../logger';
 import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
 
-export async function continuallyRetrieveMessages(): Promise<void> {
+export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
   while (true) {
-    await retrieveMessages();
+    Logger.debug('Running retrieveAndDeleteMessages()...');
+    await retrieveAndDeleteMessages();
+    Logger.debug('Successfully ran retrieveAndDeleteMessages(). Waiting 30 seconds');
+    await sleep(1000 * 30); // Wait 30 seconds per retrieval loop
   }
 }
 
-async function retrieveMessages(): Promise<void> {
+async function retrieveAndDeleteMessages(): Promise<void> {
   for (const channel of bot.channels.cache.values()) {
     if (channel.isDMBased() || !channel.isTextBased()) {
       continue;

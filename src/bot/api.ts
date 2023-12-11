@@ -1,6 +1,6 @@
 import { Partials } from 'discord.js';
 import { Logger } from '../logger';
-import { continuallyRetrieveMessages } from './core';
+import { continuallyRetrieveAndDeleteMessages } from './core';
 import { BunnyClient } from './bunny';
 
 function getToken(): string {
@@ -22,7 +22,7 @@ export const bot = new BunnyClient({
 export function loginToDiscordAndBeginDeleting() {
   bot.once('ready', () => {
     Logger.info('Logged in to Discord and now continually retrieving messages for deletion!');
-    continuallyRetrieveMessages().catch((err: any) => {
+    continuallyRetrieveAndDeleteMessages().catch((err: any) => {
       Logger.error('Encountered a fatal error in the core loop:', err);
       process.exit(1);
     });

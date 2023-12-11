@@ -1,11 +1,11 @@
 import { ChatInputCommandInteraction } from 'discord.js';
 
-const json_data = {
-  description: 'Gets all time-to-live (TTL) info for this server',
+const data = {
+  description: 'Get info about TTL for the current scope',
 };
 
-const execute_fn = async (interaction: ChatInputCommandInteraction) => {
-  console.log('eeeeeeeeeeeee!!');
+const onExecute = async (interaction: ChatInputCommandInteraction) => {
+  await interaction.reply({ content: 'info!', ephemeral: true });
 };
 
-export { json_data, execute_fn };
+export { data, onExecute };

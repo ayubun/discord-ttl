@@ -1,11 +1,24 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
 
-const json_data = {
-  description: 'Sets',
+const data = {
+  description: 'Set a message TTL (time to live) for this server or channel',
+  options: [
+    {
+      type: ApplicationCommandOptionType.Boolean,
+      name: 'personal',
+      description: 'Set this to \'true\' to only change the TTL for yourself',
+      required: true,
+    },
+    {
+      type: ApplicationCommandOptionType.Boolean,
+      name: 'channel',
+      description: 'Set to \'true\' to change the TTL for this channel. \'false\' (default) changes the TTL for the server',
+    },
+  ],
 };
 
-const execute_fn = async (interaction: ChatInputCommandInteraction) => {
-  console.log('set!');
+const onExecute = async (interaction: ChatInputCommandInteraction) => {
+  await interaction.reply({ content: 'set!', ephemeral: true });
 };
 
-export { json_data, execute_fn };
+export { data, onExecute };
