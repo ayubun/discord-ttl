@@ -19,11 +19,10 @@
     "clean": "rm -rf ./dist",
     "lint": "yarn eslint './src/**/*.ts'",
     "pretty": "prettier -c './src/**/*.ts'",
-    "lint-fix": "yarn eslint './src/**/*.ts' --fix",
-    "pretty-fix": "prettier -w './src/**/*.ts'",
+    "lint-fix": "echo 'Running lint-fix...' && yarn eslint './src/**/*.ts' --fix",
+    "pretty-fix": "echo 'Running pretty-fix...' && prettier -w './src/**/*.ts'",
     "start": "yarn build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
-    "docker:build": "docker build --tag discord-ttl .",
     "build": "yarn tsc"
   },
   "devDependencies": {
