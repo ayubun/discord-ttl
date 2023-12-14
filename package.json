@@ -5,44 +5,36 @@
   "repository": "git@github.com:ayubun/discord-ttl.git",
   "author": "ayubun <ayu@ayu.dev>",
   "license": "MIT",
-  "precommit": [
-    "yarn run lint",
-    "yarn run pretty"
-  ],
-  "extends": [
-    "plugin:you-dont-need-momentjs/recommended"
+  "pre-commit": [
+    "lint-fix",
+    "pretty-fix"
   ],
   "dependencies": {
-    "@types/sqlite3": "^3.1.8",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
-    "eslint": "^8.38.0",
-    "pg": "^8.10.0",
     "sqlite3": "^5.1.6",
-    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
     "clean": "rm -rf ./dist",
     "lint": "yarn eslint './src/**/*.ts'",
     "pretty": "prettier -c './src/**/*.ts'",
-    "lint-fix": "yarn eslint './src/**/*.ts' --fix",
-    "pretty-fix": "prettier -w './src/**/*.ts'",
+    "lint-fix": "echo 'Running lint-fix...' && yarn eslint './src/**/*.ts' --fix",
+    "pretty-fix": "echo 'Running pretty-fix...' && prettier -w './src/**/*.ts'",
     "start": "yarn build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
-    "docker:build": "docker build --tag discord-ttl .",
-    "build": "yarn tsc",
-    "newstart": "yarn build && yarn start"
+    "build": "yarn tsc"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
+    "@types/sqlite3": "^3.1.8",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.38.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
-    "precommit": "^1.2.2",
+    "pre-commit": "^1.2.2",
     "prettier": "^2.8.7",
     "ts-node-dev": "^2.0.0"
   },
-  "description": "A simple Discord bot to delete server messages older than a specified TTL (time-to-live)"
+  "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time-to-live)"
 }
