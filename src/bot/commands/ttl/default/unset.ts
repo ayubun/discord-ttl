@@ -1,13 +1,13 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
-import { BunnyCommand } from '../../bunny';
+import { BunnyCommand } from '../../../bunny';
 
 const data = {
-  description: 'Unset your message TTL (time to live) for this server or channel',
+  description: 'Unset the default message TTL (time to live) for everyone in this server or channel',
   options: [
     {
       type: ApplicationCommandOptionType.Boolean,
       name: 'channel',
-      description: 'Set to `True` to unset your TTL for the current channel. Otherwise, your server TTL will be unset.',
+      description: 'Set to `True` to unset the current channel\'s default TTL. Otherwise, unsets the server\'s default',
     },
   ],
 };

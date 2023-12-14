@@ -217,7 +217,7 @@ export class BunnyClient extends Client {
 /**
  * `BunnyCommand` is a wrapper for command files that can be executed by the `BunnyClient`
  */
-class BunnyCommand {
+export class BunnyCommand {
   private data: Record<string, any>;
   private onExecute: CallableFunction;
   private fullCommandName: string[];
@@ -314,7 +314,7 @@ class BunnyCommand {
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
-    await this.onExecute(interaction);
+    await this.onExecute(this, interaction);
   }
 }
 
