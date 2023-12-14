@@ -1,8 +1,8 @@
 FROM node:current-alpine
 WORKDIR /usr/src/app
-COPY yarn.lock package.json tsconfig.json /usr/src/app/
+COPY pnpm-lock.yaml package.json tsconfig.json /usr/src/app/
 ADD src /usr/src/app/src
-RUN yarn install && yarn build
+RUN pnpm install && pnpm build
 
 FROM node:current-alpine
 WORKDIR /usr/src/app
