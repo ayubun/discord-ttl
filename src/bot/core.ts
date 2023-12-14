@@ -1,17 +1,23 @@
-import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits } from 'discord.js';
-import { client } from './app';
-import { getServerMessageTtlMillis } from './sqlite';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Collection, GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
+import { getMessageTtl } from '../database/api';
+import { Logger } from '../logger';
+import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
 
-export async function continuallyRetrieveMessages(): Promise<void> {
+export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
+  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
-    await retrieveMessages();
+    Logger.debug('Running retrieveAndDeleteMessages()...');
+    await retrieveAndDeleteMessages();
+    Logger.debug('Successfully ran retrieveAndDeleteMessages(). Waiting 30 seconds');
+    await sleep(1000 * 30); // Wait 30 seconds per retrieval loop
   }
 }
 
-async function retrieveMessages(): Promise<void> {
-  for (const channel of client.channels.cache.values()) {
+async function retrieveAndDeleteMessages(): Promise<void> {
+  for (const channel of bot.channels.cache.values()) {
     if (channel.isDMBased() || !channel.isTextBased()) {
       continue;
     }
@@ -27,9 +33,10 @@ async function retrieveMessages(): Promise<void> {
         after: lastDeletedMessages[channel.id],
         limit: 100,
       });
-      const awaitedPromises = await handleDeletesForNonBulkDeletableMessages(guildId, channel.id, messages);
+      const deletableMessages = await collectDeletableMessages(guildId, channel.id, messages);
+      const awaitedPromises = await handleDeletesForNonBulkDeletableMessages(guildId, channel.id, deletableMessages);
       if (awaitedPromises.length === 0) {
-        await handleDeletesForBulkDeletableMessages(guildId, channel, messages);
+        await handleDeletesForBulkDeletableMessages(guildId, channel, deletableMessages);
       }
     } catch (err) {
       console.error(err);
@@ -57,13 +64,34 @@ function canGetAndDeleteMessages(channel: GuildTextBasedChannel): boolean {
   return true;
 }
 
-function isMessageOlderThanTtl(serverId: string, message: { createdAt: { getTime: () => number } }): boolean {
-  return message.createdAt.getTime() < Date.now() - getServerMessageTtlMillis(serverId);
+async function isMessageOlderThanTtl(
+  serverId: string,
+  channelId: string,
+  message: { createdAt: { getTime: () => number }; author: User },
+): Promise<boolean> {
+  const messageTtl = await getMessageTtl(serverId, channelId, message.author.id);
+  if (!messageTtl) {
+    return false;
+  }
+  return message.createdAt.getTime() < Date.now() - messageTtl * 1000;
 }
 
 function canMessageBeBulkDeleted(message: { createdAt: { getTime: () => number } }): boolean {
   const bulkDeletionThresholdInMillis: number = 1000 * 60 * 60 * 24 * 14; // 14 days (Discord's bulk deletion threshold)
   return message.createdAt.getTime() > Date.now() - bulkDeletionThresholdInMillis;
+}
+
+async function collectDeletableMessages(
+  guildId: string,
+  channelId: string,
+  messages: Collection<string, Message<boolean>>,
+): Promise<Collection<string, Message<boolean>>> {
+  return Promise.resolve(
+    messages.filter(
+      async (message: { createdAt: { getTime: () => number }; author: User }) =>
+        await isMessageOlderThanTtl(guildId, channelId, message),
+    ),
+  );
 }
 
 /**
@@ -77,10 +105,7 @@ async function handleDeletesForNonBulkDeletableMessages(
 ): Promise<void[]> {
   return Promise.all(
     messages
-      .filter(
-        (message: { createdAt: { getTime: () => number } }) =>
-          isMessageOlderThanTtl(guildId, message) && !canMessageBeBulkDeleted(message),
-      )
+      .filter((message: { createdAt: { getTime: () => number } }) => !canMessageBeBulkDeleted(message))
       .map(async (message: { delete: () => any; id: string }) => {
         await message.delete();
         lastDeletedMessages[channelId] = message.id;
@@ -97,9 +122,8 @@ async function handleDeletesForBulkDeletableMessages(
   channel: GuildTextBasedChannel,
   messages: Collection<string, Message<boolean>>,
 ): Promise<void | Collection<string, Message<boolean>>> {
-  const messagesToDelete = messages.filter(
-    (message: { createdAt: { getTime: () => number } }) =>
-      isMessageOlderThanTtl(guildId, message) && canMessageBeBulkDeleted(message),
+  const messagesToDelete = messages.filter((message: { createdAt: { getTime: () => number } }) =>
+    canMessageBeBulkDeleted(message),
   );
   if (messagesToDelete.size === 0) {
     return;
