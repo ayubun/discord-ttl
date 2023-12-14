@@ -5,7 +5,7 @@ import { deleteMessageTtlQuery, selectMessageTtlQuery, updateMessageTtlQuery, ex
 dotenv.config();
 
 // some config values
-const maxTtlString = process.env.MAXIMUM_MESSAGE_TTL_SECONDS;
+const maxTtlString = process.env.MAXIMUM_MESSAGE_TTL_IN_SECONDS;
 const maxTtl = maxTtlString ? Number(maxTtlString) : undefined;
 
 export async function applyDatabaseMigrations() {
