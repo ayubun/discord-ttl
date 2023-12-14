@@ -10,7 +10,7 @@ export const isForeverTtl = (duration: string): boolean => {
       return true;
   }
   return false;
-}
+};
 
 /**
  * Gets the seconds that a given duration string represents.
@@ -51,11 +51,11 @@ export const getSecondsFromDurationString = (duration: string): number | undefin
         return 2592000;
     }
     return undefined;
-  }
+  };
 
   const splitString = (input: string): string[] => {
     return input.split(/(?<=\D)(?=\d)/g);
-  }
+  };
 
   let seconds = 0;
   splitString(duration).forEach((part: string) => {
@@ -70,7 +70,7 @@ export const getSecondsFromDurationString = (duration: string): number | undefin
     const unit = unitMatcher[0];
     const number = numberMatcher[0];
     const val = secondsPerUnit(unit);
-    if(val) {
+    if (val) {
       seconds += parseInt(number, 10) * val;
     }
   });
@@ -78,4 +78,4 @@ export const getSecondsFromDurationString = (duration: string): number | undefin
     return undefined;
   }
   return seconds;
-}
+};

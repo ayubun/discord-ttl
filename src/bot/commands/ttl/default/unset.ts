@@ -7,7 +7,7 @@ const data = {
     {
       type: ApplicationCommandOptionType.Boolean,
       name: 'channel',
-      description: 'Set to `True` to unset the current channel\'s default TTL. Otherwise, unsets the server\'s default',
+      description: "Set to `True` to unset the current channel's default TTL. Otherwise, unsets the server's default",
     },
   ],
 };

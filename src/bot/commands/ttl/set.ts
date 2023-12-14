@@ -1,7 +1,6 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
 import { BunnyCommand } from '../../bunny';
 import { getSecondsFromDurationString, isForeverTtl } from '../../common/utils';
-import { isFunction } from 'lodash';
 
 const data = {
   description: 'Set your message TTL (time to live) for this server or channel',

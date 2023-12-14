@@ -6,4 +6,4 @@ dotenv.config();
 
 applyDatabaseMigrations()
   .then(() => loginToDiscordAndBeginDeleting())
-  .catch((e) => Logger.error(e));
+  .catch(e => Logger.error(e));

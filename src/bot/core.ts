@@ -7,7 +7,7 @@ import { bot } from './api';
 const lastDeletedMessages: Record<string, string> = {};
 
 export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
     Logger.debug('Running retrieveAndDeleteMessages()...');
     await retrieveAndDeleteMessages();

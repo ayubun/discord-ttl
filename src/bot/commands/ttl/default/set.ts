@@ -14,7 +14,7 @@ const data = {
     {
       type: ApplicationCommandOptionType.Boolean,
       name: 'channel',
-      description: 'Set to `True` to set the current channel\'s default TTL. Otherwise, sets the server\'s default',
+      description: "Set to `True` to set the current channel's default TTL. Otherwise, sets the server's default",
     },
   ],
 };
