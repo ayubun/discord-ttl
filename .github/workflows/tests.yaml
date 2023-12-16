@@ -6,23 +6,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install node.js v18
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm --frozen-lockfile
 
       - name: ESLint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Prettier
-        run: yarn pretty
+        run: pnpm pretty
       
       - name: Build
-        run: yarn build
+        run: pnpm build

@@ -5,6 +5,7 @@
   "repository": "git@github.com:ayubun/discord-ttl.git",
   "author": "ayubun <ayu@ayu.dev>",
   "license": "MIT",
+  "packageManager": "pnpm@8.12.1",
   "pre-commit": [
     "lint-fix",
     "pretty-fix"
@@ -17,13 +18,13 @@
   },
   "scripts": {
     "clean": "rm -rf ./dist",
-    "lint": "yarn eslint './src/**/*.ts'",
+    "lint": "pnpm eslint './src/**/*.ts'",
     "pretty": "prettier -c './src/**/*.ts'",
-    "lint-fix": "echo 'Running lint-fix...' && yarn eslint './src/**/*.ts' --fix",
+    "lint-fix": "echo 'Running lint-fix...' && pnpm eslint './src/**/*.ts' --fix",
     "pretty-fix": "echo 'Running pretty-fix...' && prettier -w './src/**/*.ts'",
-    "start": "yarn build && node dist/app.js",
+    "start": "pnpm build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
-    "build": "yarn tsc"
+    "build": "pnpm tsc"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
