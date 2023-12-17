@@ -1,5 +1,5 @@
 name: Tests
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
   tests:
     name: Tests
@@ -7,6 +7,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
 
       - name: Install node.js v18
         uses: actions/setup-node@v4
@@ -16,7 +19,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: ESLint
         run: pnpm lint

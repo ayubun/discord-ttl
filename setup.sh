@@ -120,6 +120,9 @@ else
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Auto-Updater Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Added update-ttl.sh to crontab${RESET}" 
 fi
 
+# Actually startup TTL
+docker compose up -d
+
 # Return to the directory we initially ran the script from
 cd $CURRENT_DIR
 
@@ -143,16 +146,16 @@ if [[ $NEW_DOTENV == true ]]; then
   echo "${RESET}${BLUE_TEXT}      ${UNDERLINE}https://ayu.dev/r/discord-bot-token-guide${RESET}"
   echo ""
 fi
-echo "${RESET}${BOLD}${CYAN_TEXT}            To start Discord TTL, type${RESET}${CYAN_TEXT}:${RESET}"
+echo "${RESET}${BOLD}${CYAN_TEXT} If TTL goes offline, you can start it by typing${RESET}${CYAN_TEXT}:${RESET}"
 echo ""
 echo "${RESET}${WHITE_TEXT}               docker compose up -d${RESET}"
 echo ""
 echo "${RESET}${BOLD}${CYAN_TEXT}             To check the logs, type${RESET}${CYAN_TEXT}:${RESET}"
 echo ""
-echo "${RESET}${WHITE_TEXT}               docker compose logs${RESET}"
+echo "${RESET}${WHITE_TEXT}               docker compose logs -f${RESET}"
 echo ""
 if [[ $ENV == "MacOS" && $SKIP_DOCKER == false ]]; then
-  echo "${RESET}${YELLOW_TEXT}  Since you are on Mac OS, you may need to start the${RESET}"
-  echo "${RESET}${YELLOW_TEXT}  Docker app first via Cmd + Space -> Typing \"Docker\"${RESET}"
+  echo "${RESET}${YELLOW_TEXT} Since you are on Mac OS, you may need to start the${RESET}"
+  echo "${RESET}${YELLOW_TEXT} Docker app first via Cmd + Space -> Typing \"Docker\"${RESET}"
   echo ""
 fi
