@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "main": "dist/app.js",
   "repository": "git@github.com:ayubun/discord-ttl.git",
-  "author": "ayubun <ayu@ayu.dev>",
+  "author": "ayu <ayu@ayu.dev>",
   "license": "MIT",
   "packageManager": "pnpm@8.12.1",
   "pre-commit": [
