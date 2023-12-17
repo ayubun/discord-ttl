@@ -49,9 +49,9 @@ UPSTREAM_MAJOR_VERSION=${UPSTREAM_VERSION%\.*\.*}
 if [[ $CURRENT_MAJOR_VERSION != $UPSTREAM_MAJOR_VERSION ]]; then
   echo "${RESET}${RED_TEXT}[${BOLD}ERROR${RESET}${RED_TEXT}]${RESET}${BOLD}${YELLOW_TEXT} The upstream major version is unexpected! The updater will only update the container(s) now.${RESET}" 
   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling any new docker image(s)...${RESET}" 
-  docker-compose pull
+  docker compose pull
   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Upping container(s)...${RESET}"
-  docker-compose up -d
+  docker compose up -d
   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done! Discord TTL container(s) should now be up-to-date :)${RESET}"
   return 1
 fi
@@ -87,7 +87,7 @@ if [[ $CURRENT_VERSION < $UPSTREAM_VERSION ]]; then
   curl -s ${RAW_CONTENT_URL}/package.json > ./package.json
   if [[ $SETUP_UPDATED == true ]]; then
     echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Running updated setup.sh...${RESET}" 
-    source ./setup.sh
+    source ./setup.sh --skip-docker --skip-docker-compose
   fi
 else
   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} No upstream updates found. Local scripts & files should be up-to-date!${RESET}"
