@@ -18,10 +18,9 @@ the Discord TTL bot will work across multiple servers. Slower deletions may occu
 # Steps to self-host
 
 ## If you are new to self-hosting
-Firsly, I am happy that you are looking to expand your knowledge into this domain! To get started, you'll want a server to host your bot on.
+Firstly, I am happy that you are looking to expand your knowledge into this domain! To get started, you'll want a server to host your bot on.
 If you already have one, that's great! For my own sanity, the script in this tutorial only works on Debian/Ubuntu & MacOS, but it is
-possible to get Discord TTL running on any OS so long as you can install [Docker](https://docs.docker.com/engine/install/ubuntu/) 
-& [Docker Compose](https://docs.docker.com/compose/install/).
+possible to get Discord TTL running on any OS so long as you can install [Docker](https://docs.docker.com/engine/install/ubuntu/).
 
 If you don't have a VPS yet, you can find them all over the internet :D If you need a recommendation, GalaxyGate's Standard 1GB offers a 
 perfectly-capable $3/month option that might be within budget for most: https://galaxygate.net/hosting/vps/
