@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
 import { BunnyCommand } from '../../../bunny';
 
+// TODO: Make this command server admin only
 const data = {
   description: 'Unset the default message TTL (time to live) for everyone in this server or channel',
   options: [

@@ -2,6 +2,7 @@ import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'disco
 import { BunnyCommand } from '../../../bunny';
 import { getSecondsFromDurationString, isForeverTtl } from '../../../common/utils';
 
+// TODO: Make this command server admin only
 const data = {
   description: 'Set a default message TTL (time to live) for everyone in this server or channel',
   options: [
