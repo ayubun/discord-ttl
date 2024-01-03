@@ -20,6 +20,7 @@ const data = {
   ],
 };
 
+// TODO: Make the response non-ephemeral
 const onExecute = async (self: BunnyCommand, interaction: ChatInputCommandInteraction) => {
   const durationString = interaction.options.getString('duration', true).toLocaleLowerCase();
   const isChannelTtl = interaction.options.getBoolean('channel', false) ? true : false;

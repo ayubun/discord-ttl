@@ -19,6 +19,7 @@ const data = {
   ],
 };
 
+// TODO: Make the response ephemeral
 const onExecute = async (self: BunnyCommand, interaction: ChatInputCommandInteraction) => {
   const durationString = interaction.options.getString('duration', true).toLocaleLowerCase();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -11,8 +11,10 @@
     "pretty-fix"
   ],
   "dependencies": {
+    "@libsql/client": "0.4.0-pre.5",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
+    "drizzle-orm": "^0.29.3",
     "sqlite3": "^5.1.6",
     "typescript": "^5.0.4"
   },
@@ -31,6 +33,7 @@
     "@types/sqlite3": "^3.1.8",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "drizzle-kit": "^0.20.9",
     "eslint": "^8.38.0",
     "eslint-plugin-import": "^2.27.5",
     "pre-commit": "^1.2.2",
