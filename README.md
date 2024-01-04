@@ -83,4 +83,4 @@ Once the `.env` is saved with the bot token, you can start Discord TTL with `doc
 docker compose up -d
 ```
 
-To create an invite link for your newly-hosted Discord TTL instance, check out [Discord.js's bot invite links guide].
+To create an invite link for your newly-hosted Discord TTL instance, check out [Discord.js's bot invite links guide](https://discordjs.guide/preparations/adding-your-bot-to-servers.html).
