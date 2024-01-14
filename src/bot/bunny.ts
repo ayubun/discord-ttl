@@ -10,13 +10,13 @@ import assert from 'node:assert';
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-  CacheType,
+  type CacheType,
   ChatInputCommandInteraction,
   Client,
-  ClientOptions,
-  CommandInteractionOption,
+  type ClientOptions,
+  type CommandInteractionOption,
   Events,
-  Interaction,
+  type Interaction,
   REST,
   Routes,
 } from 'discord.js';
@@ -104,10 +104,10 @@ export class BunnyClient extends Client {
         const cmd = current_command_tree;
         switch (current_depth) {
           case 0: // Command layer
-            new_json_data_tree.type = ApplicationCommandType.ChatInput;
+            new_json_data_tree['type'] = ApplicationCommandType.ChatInput;
             break;
           default: // Subcommand layer
-            new_json_data_tree.type = ApplicationCommandOptionType.Subcommand;
+            new_json_data_tree['type'] = ApplicationCommandOptionType.Subcommand;
             break;
         }
         new_json_data_tree = { ...new_json_data_tree, ...cmd.getJsonData() };
@@ -115,15 +115,15 @@ export class BunnyClient extends Client {
       } else {
         switch (current_depth) {
           case 0: // Command layer
-            new_json_data_tree.type = ApplicationCommandType.ChatInput;
+            new_json_data_tree['type'] = ApplicationCommandType.ChatInput;
             break;
           default: // Subcommand layer
-            new_json_data_tree.type = ApplicationCommandOptionType.SubcommandGroup;
+            new_json_data_tree['type'] = ApplicationCommandOptionType.SubcommandGroup;
             break;
         }
-        new_json_data_tree.options = [];
+        new_json_data_tree['options'] = [];
         for (const key of Object.keys(current_command_tree)) {
-          new_json_data_tree.options.push(
+          new_json_data_tree['options'].push(
             buildJsonDataFromTree(key, current_command_tree[key] as Record<string, any>, current_depth + 1),
           );
         }
@@ -245,15 +245,15 @@ export class BunnyCommand {
   private static assertCommandDataIsValid(data: Record<string, any>) {
     assert('description' in data, `Missing 'description' from command data: ${JSON.stringify(data, undefined, 2)}`);
     assert(
-      data.description.length >= 1 && data.description.length <= 100,
-      `'description' must be between 1 and 100 characters (found ${data.description.length}): ${JSON.stringify(
+      data['description'].length >= 1 && data['description'].length <= 100,
+      `'description' must be between 1 and 100 characters (found ${data['description'].length}): ${JSON.stringify(
         data,
         undefined,
         2,
       )}`,
     );
     if ('options' in data) {
-      const options = data.options;
+      const options = data['options'];
       assert(Array.isArray(options), `'options' must be an array (found type: ${typeof options})`);
       for (const option of options.values()) {
         assert(typeof option === 'object', `'option' was not resolvable as json: ${String(option)}`);
@@ -314,7 +314,7 @@ export class BunnyCommand {
   }
 
   public getName(): string {
-    return this.data.name;
+    return this.data['name'];
   }
 
   public getJsonData(): Record<string, any> {
@@ -331,13 +331,52 @@ export class BunnyCommand {
  * bunny.ts uses it's own simple logger so that it can be used in other projects.
  */
 class BunnyLogger {
-  private static DEBUG_LOGGING = true;
-  private static INFO_LOGGING = true;
+  // State
+  private static IS_SETUP = false;
+  // Defaults
+  private static BUNNY_DEBUG_LOGGING = false;
+  private static BUNNY_INFO_LOGGING = true;
+  private static BUNNY_ERROR_LOGGING = true;
 
   // I got the colour codes from here: https://ss64.com/nt/syntax-ansi.html
 
+  /**
+   * Startup helper function to process .env variables for logging
+   * @param variable The name of the logging variable to process
+   */
+  private static processLoggingEnv(variable: string) {
+    if ((this as any)[variable] === undefined) {
+      console.log('\x1b[32mBunnyLogger does not have a variable called ' + variable);
+      process.exit(1);
+    }
+    const value = process.env[variable]?.toLocaleLowerCase();
+    if (value !== undefined) {
+      if (value === 'false') {
+        (this as any)[variable] = false;
+      } else if (value === 'true') {
+        (this as any)[variable] = true;
+      } else {
+        console.log('\x1b[32mInvalid value for variable "' + variable + '" in the .env (expected true or false, found ' + value + ')');
+        process.exit(1);
+      }
+    }
+  }
+
+  /**
+   * Initiate the Logger singleton & print a startup message
+   */
+  private static startup() {
+    this.processLoggingEnv('BUNNY_DEBUG_LOGGING');
+    this.processLoggingEnv('BUNNY_INFO_LOGGING');
+    this.processLoggingEnv('BUNNY_ERROR_LOGGING');
+    this.IS_SETUP = true;
+  }
+
   public static debug(...args: any[]) {
-    if (!BunnyLogger.DEBUG_LOGGING) {
+    if (!this.IS_SETUP) {
+      this.startup();
+    }
+    if (!this.BUNNY_DEBUG_LOGGING) {
       return;
     }
     args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[90mDEBUG\x1b[0m]\x1b[90m');
@@ -347,7 +386,10 @@ class BunnyLogger {
   }
 
   public static info(...args: any[]) {
-    if (!BunnyLogger.INFO_LOGGING) {
+    if (!this.IS_SETUP) {
+      this.startup();
+    }
+    if (!this.BUNNY_INFO_LOGGING) {
       return;
     }
     args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[32mINFO\x1b[0m]\x1b[37m');
@@ -357,6 +399,12 @@ class BunnyLogger {
   }
 
   public static error(...args: any[]) {
+    if (!this.IS_SETUP) {
+      this.startup();
+    }
+    if (!this.BUNNY_ERROR_LOGGING) {
+      return;
+    }
     args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[31mERROR\x1b[0m]\x1b[93m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

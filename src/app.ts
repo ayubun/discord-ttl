@@ -4,6 +4,8 @@ import { applyDatabaseMigrations } from './database/api';
 import { Logger } from './logger';
 dotenv.config();
 
-applyDatabaseMigrations()
+Logger.startup();
+
+await applyDatabaseMigrations()
   .then(() => loginToDiscordAndBeginDeleting())
   .catch(e => Logger.error(e));

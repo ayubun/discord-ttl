@@ -5,28 +5,32 @@
   "repository": "git@github.com:ayubun/discord-ttl.git",
   "author": "ayu <ayu@ayu.dev>",
   "license": "MIT",
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "bun@1.0.22",
   "pre-commit": [
     "lint-fix",
     "pretty-fix"
   ],
   "dependencies": {
     "@libsql/client": "0.4.0-pre.5",
+    "@types/bun": "^1.0.1",
+    "@types/figlet": "^1.5.8",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.29.3",
-    "sqlite3": "^5.1.6",
+    "figlet": "^1.7.0",
+    "sqlite": "^5.1.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
     "clean": "rm -rf ./dist",
-    "lint": "pnpm eslint './src/**/*.ts'",
+    "clean-all":  "rm -rf ./dist ./node_modules",
+    "lint": "bun eslint './src/**/*.ts'",
     "pretty": "prettier -c './src/**/*.ts'",
-    "lint-fix": "echo 'Running lint-fix...' && pnpm eslint './src/**/*.ts' --fix",
+    "lint-fix": "echo 'Running lint-fix...' && bun eslint './src/**/*.ts' --fix",
     "pretty-fix": "echo 'Running pretty-fix...' && prettier -w './src/**/*.ts'",
-    "start": "pnpm build && node dist/app.js",
+    "start": "bun build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
-    "build": "pnpm tsc"
+    "build": "bun tsc"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
