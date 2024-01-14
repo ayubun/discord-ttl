@@ -24,17 +24,17 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "clean": "rm -rf ./dist",
-    "clean-all":  "rm -rf ./dist ./node_modules",
+    "clean": "rm -rf ./dist && find src -type d -name 'dist' -exec rm -r {} +",
+    "clean-all": "bun clean && rm -rf ./node_modules",
     "lint": "bun eslint './src/**/*.ts'",
-    "pretty": "prettier -c './src/**/*.ts'",
+    "pretty": "bun prettier -c './src/**/*.ts'",
     "lint-fix": "bun eslint './src/**/*.ts' --fix",
     "lint-fix-echo": "echo 'Running lint-fix...'",
-    "pretty-fix": "prettier -w './src/**/*.ts'",
+    "pretty-fix": "bun prettier -w './src/**/*.ts'",
     "pretty-fix-echo": "echo 'Running pretty-fix...'",
-    "start": "bun build && node dist/app.js",
-    "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
-    "build": "bun tsc"
+    "start": "bun compile && bun run dist/app.js",
+    "watch": "bun --watch run src/app.ts",
+    "compile": "bun tsc"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
@@ -46,7 +46,11 @@
     "eslint-plugin-import": "^2.27.5",
     "pre-commit": "^1.2.2",
     "prettier": "^2.8.7",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "@types/bun": "latest"
   },
-  "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time-to-live)"
+  "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time-to-live)",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }

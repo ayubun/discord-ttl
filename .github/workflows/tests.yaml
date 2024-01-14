@@ -13,13 +13,6 @@ jobs:
         with:
           bun-version: latest
 
-      - name: install node.js v18
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'bun'
-          cache-dependency-path: bun.lockb
-
       - name: install dependencies
         run: bun install --frozen-lockfile
 
@@ -27,7 +20,7 @@ jobs:
         run: bun lint
 
       - name: pretty :o
-        run: pnpm pretty
+        run: bun pretty
       
-      - name: build !!
-        run: pnpm build
+      - name: compile !!
+        run: bun compile
