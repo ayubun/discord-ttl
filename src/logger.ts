@@ -42,8 +42,8 @@ export class Logger {
       }
     }
     const getLogString = (logging_types: string[]) => {
-      let log_string = "";
-      switch(logging_types.length) {
+      let log_string = '';
+      switch (logging_types.length) {
         case 1:
           log_string += logging_types[0];
           break;
@@ -62,13 +62,13 @@ export class Logger {
       }
       log_string += ' logging ' + (logging_types.length > 1 ? 'have' : 'has');
       return log_string;
-    }
+    };
     if (enabled.length > 0) {
       console.log('\x1b[32m' + getLogString(enabled) + ' been explicitly enabled via the .env\x1b[0m');
       console.log('');
     }
     if (disabled.length > 0) {
-      console.log('\x1b[31m' +  getLogString(disabled) + ' been explicitly disabled via the .env\x1b[0m');
+      console.log('\x1b[31m' + getLogString(disabled) + ' been explicitly disabled via the .env\x1b[0m');
       console.log('');
     }
   }

@@ -7,7 +7,9 @@
   "license": "MIT",
   "packageManager": "bun@1.0.22",
   "pre-commit": [
+    "lint-fix-echo",
     "lint-fix",
+    "pretty-fix-echo",
     "pretty-fix"
   ],
   "dependencies": {
@@ -26,8 +28,10 @@
     "clean-all":  "rm -rf ./dist ./node_modules",
     "lint": "bun eslint './src/**/*.ts'",
     "pretty": "prettier -c './src/**/*.ts'",
-    "lint-fix": "echo 'Running lint-fix...' && bun eslint './src/**/*.ts' --fix",
-    "pretty-fix": "echo 'Running pretty-fix...' && prettier -w './src/**/*.ts'",
+    "lint-fix": "bun eslint './src/**/*.ts' --fix",
+    "lint-fix-echo": "echo 'Running lint-fix...'",
+    "pretty-fix": "prettier -w './src/**/*.ts'",
+    "pretty-fix-echo": "echo 'Running pretty-fix...'",
     "start": "bun build && node dist/app.js",
     "start:dev": "ts-node-dev --watch src/**/*.{ts,js} src/app.ts",
     "build": "bun tsc"

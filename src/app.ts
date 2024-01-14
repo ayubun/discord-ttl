@@ -9,7 +9,7 @@ console.log('\x1b[36m' + figlet.textSync('Discord TTL') + '\x1b[0m');
 console.log('\x1b[90m        https://github.com/ayubun/discord-ttl\x1b[0m');
 console.log('');
 Logger.startup();
-Logger.info('Starting up...')
+Logger.info('Starting up...');
 
 await applyDatabaseMigrations()
   .then(() => loginToDiscordAndBeginDeleting())
