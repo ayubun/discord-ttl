@@ -1,13 +1,11 @@
-import assert from "assert";
-import figlet from "figlet";
-
+import assert from 'assert';
+import figlet from 'figlet';
 
 /**
  * A Discord TTL console logs wrapper for prettier logs.
  * Console colour codes source: https://ss64.com/nt/syntax-ansi.html
  */
 export class Logger {
-
   // Defaults
   private static DEBUG_LOGGING = false;
   private static INFO_LOGGING = true;
@@ -29,7 +27,13 @@ export class Logger {
         console.log('\x1b[32m' + logging_type + ' logging has been explicitly enabled via the .env\x1b[0m');
         (this as any)[variable] = true;
       } else {
-        console.log('\x1b[32mInvalid value for variable "' + variable + '" in the .env (expected true or false, found ' + value + ')');
+        console.log(
+          '\x1b[32mInvalid value for variable "' +
+            variable +
+            '" in the .env (expected true or false, found ' +
+            value +
+            ')',
+        );
         process.exit(1);
       }
       console.log('');

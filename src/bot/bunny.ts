@@ -356,7 +356,13 @@ class BunnyLogger {
       } else if (value === 'true') {
         (this as any)[variable] = true;
       } else {
-        console.log('\x1b[32mInvalid value for variable "' + variable + '" in the .env (expected true or false, found ' + value + ')');
+        console.log(
+          '\x1b[32mInvalid value for variable "' +
+            variable +
+            '" in the .env (expected true or false, found ' +
+            value +
+            ')',
+        );
         process.exit(1);
       }
     }
