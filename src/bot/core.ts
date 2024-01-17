@@ -5,13 +5,26 @@ import { Logger } from '../logger';
 import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
+let numSingularDeletedMessages: number = 0;
+let numBulkDeletedMessages: number = 0;
+let numTotalDeletedMessages: number = 0;
 
 export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
     Logger.debug('Running retrieveAndDeleteMessages()...');
+    numSingularDeletedMessages = 0;
+    numBulkDeletedMessages = 0;
+    numTotalDeletedMessages = 0;
     await retrieveAndDeleteMessages();
-    Logger.debug('Successfully ran retrieveAndDeleteMessages(). Waiting 30 seconds');
+    if (numTotalDeletedMessages === 0) {
+      Logger.debug('No deletable messages were found. Waiting 30 seconds');
+    } else {
+      Logger.debug(
+        `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's': ''}`,
+        `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}). Waiting 30 seconds`,
+      );
+    }
     await sleep(1000 * 30); // Wait 30 seconds per retrieval loop
   }
 }
@@ -108,6 +121,8 @@ async function handleDeletesForNonBulkDeletableMessages(
       .filter((message: { createdAt: { getTime: () => number } }) => !canMessageBeBulkDeleted(message))
       .map(async (message: { delete: () => any; id: string }) => {
         await message.delete();
+        numTotalDeletedMessages++;
+        numSingularDeletedMessages++;
         lastDeletedMessages[channelId] = message.id;
       }),
   );
@@ -131,6 +146,8 @@ async function handleDeletesForBulkDeletableMessages(
   // https://discord.js.org/#/docs/main/stable/class/BaseGuildTextChannel?scrollTo=bulkDelete
   return channel.bulkDelete(messagesToDelete).then(deletedMessages => {
     let newestMessageId = '0';
+    numTotalDeletedMessages += deletedMessages.size;
+    numBulkDeletedMessages += deletedMessages.size;
     deletedMessages.forEach((_message: any, snowflake: string) => {
       if (BigInt(newestMessageId) < BigInt(snowflake)) {
         newestMessageId = snowflake;

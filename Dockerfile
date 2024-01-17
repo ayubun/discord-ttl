@@ -1,13 +1,25 @@
-FROM node:current-alpine
-WORKDIR /usr/src/app
-COPY pnpm-lock.yaml package.json tsconfig.json /usr/src/app/
-ADD src /usr/src/app/src
-RUN corepack enable
-RUN corepack prepare
-RUN pnpm install && pnpm build
+###
+###  layer 1: install deps & compile typescript
+###
+FROM oven/bun:alpine
+#
+WORKDIR /usr/app
+COPY bun.lockb package.json tsconfig.json /usr/app/
+ADD src /usr/app/src
+# drizzle orm requires node :c
+RUN apk add nodejs
+#
+RUN bun install 
+RUN bun compile
 
-FROM node:current-alpine
-WORKDIR /usr/src/app
-COPY --from=0 /usr/src/app/node_modules /usr/src/app/node_modules
-COPY --from=0 /usr/src/app/dist /usr/src/app/dist
-CMD node /usr/src/app/dist/app.js
+###
+###    (final)
+###  layer 2: run
+###
+FROM oven/bun:alpine
+#
+WORKDIR /usr/app
+COPY --from=0 /usr/app/node_modules /usr/app/node_modules
+COPY --from=0 /usr/app/dist /usr/app/dist
+#
+CMD bun run /usr/app/dist/app.js
