@@ -38,5 +38,6 @@
   "include": [
     "./src/**/*",
     "./test/**/*",
+    "./.eslintrc.js",
   ],
 }
