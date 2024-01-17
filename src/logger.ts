@@ -13,8 +13,8 @@ export class Logger {
    * @param variable The name of the logging variable to process
    */
   private static processLoggingEnvs(variables: string[]) {
-    const enabled = [];
-    const disabled = [];
+    const enabled: string[] = [];
+    const disabled: string[] = [];
     for (const variable of variables) {
       if ((this as any)[variable] === undefined) {
         console.log('Logger does not have a variable called ' + variable);
