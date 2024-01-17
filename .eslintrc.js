@@ -59,6 +59,8 @@ module.exports = {
       "new-parens": "error",
       "no-caller": "error",
       "no-constant-condition": "off",
+      // https://typescript-eslint.io/rules/dot-notation/#how-to-use
+      "dot-notation": "off",
       "no-eval": "error",
       "no-multiple-empty-lines": "error",
       "no-new-wrappers": "error",

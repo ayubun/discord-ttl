@@ -1,19 +1,16 @@
-import { Client, Partials } from 'discord.js';
 import dotenv from 'dotenv';
-import { continuallyRetrieveMessages } from './ttl';
+import figlet from 'figlet';
+import { loginToDiscordAndBeginDeleting } from './bot/api';
+import { applyDatabaseMigrations } from './database/api';
+import { Logger } from './logger';
 dotenv.config();
 
-export const client = new Client({
-  intents: ['Guilds'],
-  partials: [Partials.Channel, Partials.Message],
-});
+console.log('\x1b[36m' + figlet.textSync('Discord TTL') + '\x1b[0m');
+console.log('\x1b[90m        https://github.com/ayubun/discord-ttl\x1b[0m');
+console.log('');
+Logger.startup();
+Logger.info('Starting up...');
 
-client.once('ready', () => {
-  console.log('Discord TTL is now running!');
-  continuallyRetrieveMessages().catch(console.error);
-});
-
-client.login(process.env.DISCORD_BOT_TOKEN).catch((err: any) => {
-  console.error(err);
-  process.exit();
-});
+await applyDatabaseMigrations()
+  .then(() => loginToDiscordAndBeginDeleting())
+  .catch(e => Logger.error(e));

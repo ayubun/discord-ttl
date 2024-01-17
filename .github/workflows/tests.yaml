@@ -1,28 +1,26 @@
-name: Tests
-on: [push]
+name: tests
+on: [push, workflow_dispatch]
 jobs:
   tests:
-    name: Tests
+    name: tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install node.js v16
-        uses: actions/setup-node@v2
+      - name: install bun :3
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 16
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
+          bun-version: latest
 
-      - name: Install dependencies
-        run: yarn --immutable
+      - name: install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: ESLint
-        run: yarn lint
+      - name: lint >:D
+        run: bun lint
 
-      - name: Prettier
-        run: yarn pretty
+      - name: pretty :o
+        run: bun pretty
       
-      - name: Build
-        run: yarn build
+      - name: compile !!
+        run: bun compile
