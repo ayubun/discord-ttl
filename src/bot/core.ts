@@ -21,7 +21,7 @@ export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
       Logger.debug('No deletable messages were found. Waiting 30 seconds');
     } else {
       Logger.debug(
-        `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's': ''}`,
+        `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
         `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}). Waiting 30 seconds`,
       );
     }

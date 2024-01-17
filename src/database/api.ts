@@ -11,7 +11,7 @@ const maxTtl = maxTtlString ? Number(maxTtlString) : undefined;
 
 export async function applyDatabaseMigrations() {
   Logger.debug('Applying database migrations...');
-  const migrations_directory = 'src/database/migrations';
+  const migrations_directory = path.join(import.meta.dir, 'migrations');
   const sql_file_paths: string[] = [];
 
   fs.readdirSync(migrations_directory).forEach(file => {

@@ -59,7 +59,7 @@ export class BunnyClient extends Client {
    * }
    */
   private static buildCommandTree() {
-    const root_commands_path = path.join(__dirname, 'commands');
+    const root_commands_path = path.join(import.meta.dir, 'commands');
 
     function mapCommandPathsToBunnyCommandsRecursively(current_dir: string): Record<string, any> {
       const command_tree: Record<string, any> = {};
