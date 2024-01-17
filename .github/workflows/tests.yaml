@@ -1,31 +1,26 @@
-name: Tests
+name: tests
 on: [push, workflow_dispatch]
 jobs:
   tests:
-    name: Tests
+    name: tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Install node.js v18
-        uses: actions/setup-node@v4
+      - name: install bun :3
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          bun-version: latest
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: ESLint
-        run: pnpm lint
+      - name: lint >:D
+        run: bun lint
 
-      - name: Prettier
-        run: pnpm pretty
+      - name: pretty :o
+        run: bun pretty
       
-      - name: Build
-        run: pnpm build
+      - name: compile !!
+        run: bun compile

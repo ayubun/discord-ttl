@@ -4,7 +4,7 @@ import { continuallyRetrieveAndDeleteMessages } from './core';
 import { BunnyClient } from './bunny';
 
 function getToken(): string {
-  const token = process.env.DISCORD_BOT_TOKEN;
+  const token = process.env['DISCORD_BOT_TOKEN'];
   if (!token) {
     Logger.error('Discord token was not provided in the .env (i.e. DISCORD_BOT_TOKEN=token)');
     Logger.error('To get a token, see: https://ayu.dev/r/discord-bot-token-guide');

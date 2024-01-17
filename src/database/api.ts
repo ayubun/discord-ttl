@@ -1,24 +1,29 @@
 import fs from 'fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
+import { Logger } from '../logger';
 import { deleteMessageTtlQuery, selectMessageTtlQuery, updateMessageTtlQuery, executeQuery } from './queries';
 dotenv.config();
 
 // some config values
-const maxTtlString = process.env.MAXIMUM_MESSAGE_TTL_IN_SECONDS;
+const maxTtlString = process.env['MAXIMUM_MESSAGE_TTL_IN_SECONDS'];
 const maxTtl = maxTtlString ? Number(maxTtlString) : undefined;
 
 export async function applyDatabaseMigrations() {
-  const migrations_directory = 'src/database/migrations';
+  Logger.debug('Applying database migrations...');
+  const migrations_directory = path.join(import.meta.dir, 'migrations');
   const sql_file_paths: string[] = [];
 
   fs.readdirSync(migrations_directory).forEach(file => {
+    Logger.debug(`Found migration file: ${file}`);
     sql_file_paths.push(path.join(migrations_directory, file));
   });
 
   for await (const file_path of sql_file_paths.sort().values()) {
     const sql = fs.readFileSync(file_path, { encoding: 'utf8' });
+    Logger.debug('Executing migration:', file_path);
     await executeQuery(sql);
+    Logger.debug('Successfully executed migration:', file_path);
   }
 }
 
