@@ -13,7 +13,6 @@
     "pretty-fix"
   ],
   "dependencies": {
-    "@types/figlet": "^1.5.8",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.29.3",
@@ -22,7 +21,7 @@
   },
   "scripts": {
     "clean": "rm -rf ./dist && find src -type d -name 'dist' -exec rm -r {} +",
-    "clean-all": "bun clean && rm -rf ./node_modules",
+    "clean-all": "bun clean && rm -rf ./node_modules ./bun.lockb",
     "lint": "bun eslint './src/**/*.ts'",
     "pretty": "bun prettier -c './src/**/*.ts'",
     "lint-fix": "bun eslint './src/**/*.ts' --fix",
@@ -36,6 +35,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/figlet": "^1.5.8",
     "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.4.0",
