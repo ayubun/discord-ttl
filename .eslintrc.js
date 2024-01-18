@@ -19,6 +19,11 @@ module.exports = {
   plugins: [
       "@typescript-eslint",
   ],
+//   settings: {
+//     "import/resolver": {
+//         typescript: true,
+//     }
+//   },
   rules: {
       "@typescript-eslint/array-type": "error",
       "@typescript-eslint/ban-types": "off",

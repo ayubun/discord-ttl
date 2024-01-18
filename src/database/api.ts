@@ -21,9 +21,9 @@ export async function applyDatabaseMigrations() {
 
   for await (const file_path of sql_file_paths.sort().values()) {
     const sql = fs.readFileSync(file_path, { encoding: 'utf8' });
-    Logger.debug('Executing migration:', file_path);
+    Logger.debug(`Executing migration: ${file_path}`);
     await executeQuery(sql);
-    Logger.debug('Successfully executed migration:', file_path);
+    Logger.debug(`Successfully executed migration: ${file_path}`);
   }
 }
 
