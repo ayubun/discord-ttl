@@ -46,49 +46,76 @@ UPSTREAM_VERSION=${UPSTREAM_VERSION#* }
 # We will check this JUST in case the major versions are mismatched (this shouldn't happen but /shrug ppl make mistakes)
 UPSTREAM_MAJOR_VERSION=${UPSTREAM_VERSION%\.*\.*}
 
-if [[ $CURRENT_MAJOR_VERSION != $UPSTREAM_MAJOR_VERSION ]]; then
-  echo "${RESET}${RED_TEXT}[${BOLD}ERROR${RESET}${RED_TEXT}]${RESET}${BOLD}${YELLOW_TEXT} The upstream major version is unexpected! The updater will only update the container(s) now.${RESET}" 
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling any new docker image(s)...${RESET}" 
-  docker compose pull
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Upping container(s)...${RESET}"
-  docker compose up -d
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done! Discord TTL container(s) should now be up-to-date :)${RESET}"
-  return 1
-fi
+# if [[ $CURRENT_MAJOR_VERSION != $UPSTREAM_MAJOR_VERSION ]]; then
+#   echo "${RESET}${RED_TEXT}[${BOLD}ERROR${RESET}${RED_TEXT}]${RESET}${BOLD}${YELLOW_TEXT} The upstream major version is unexpected! The updater will only update the container(s) now.${RESET}" 
+#   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling any new docker image(s)...${RESET}" 
+#   docker compose pull
+#   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Upping container(s)...${RESET}"
+#   docker compose up -d
+#   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Done! Discord TTL container(s) should now be up-to-date :)${RESET}"
+#   return 1
+# fi
 
 if [[ $CURRENT_VERSION < $UPSTREAM_VERSION ]]; then
+  # Check if the updater itself needs to be updated
+  if [[ $(curl -s ${RAW_CONTENT_URL}/bin/update-ttl.sh) != $(cat ./bin/update-ttl.sh) ]]; then
+    echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} An update for the updater has been detected. CURLing update-ttl.sh...${RESET}" 
+    curl -s ${RAW_CONTENT_URL}/bin/update-ttl.sh > ./bin/update-ttl.sh
+    echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Running updated update-ttl.sh...${RESET}" 
+    source ./bin/update-ttl.sh
+    # Return to whatever location this script was intitally run from for UX purposes
+    cd $CURRENT_DIR
+    return 0
+  fi
   # PULL UPDATED SCRIPTS
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling updated scripts...${RESET}" 
   SETUP_UPDATED=false
+  DOTENV_UPDATED=false
   if [[ $(curl -s ${RAW_CONTENT_URL}/setup.sh) != $(cat ./setup.sh) ]]; then
     SETUP_UPDATED=true
   fi
+  if [[ $(curl -s ${RAW_CONTENT_URL}/.env.example) != $(cat ./.env.example) ]]; then
+    DOTENV_UPDATED=true
+  fi
   # Currently unneeded \/
-  # UPDATER_UPDATED=false
-  # if [[ $(curl -s ${RAW_CONTENT_URL}/bin/update-ttl.sh) != $(cat ./bin/update-ttl.sh) ]]; then
-  #   UPDATER_UPDATED=true
-  # fi
   # BASH_CMD_UPDATED=false
   # if [[ $(curl -s ${RAW_CONTENT_URL}/bin/discord-ttl) != $(cat ./bin/discord-ttl) ]]; then
   #   BASH_CMD_UPDATED=true
   # fi
-  curl -s ${RAW_CONTENT_URL}/setup.sh > ./setup.sh
-  curl -s ${RAW_CONTENT_URL}/bin/update-ttl.sh > ./bin/update-ttl.sh
-  curl -s ${RAW_CONTENT_URL}/bin/discord-ttl > ./bin/discord-ttl
+  # curl -s ${RAW_CONTENT_URL}/bin/discord-ttl > ./bin/discord-ttl
   # PULL UPDATED DOCKER COMPOSE
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling updated docker compose...${RESET}" 
+  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} CURLing docker-compose.yaml...${RESET}" 
   curl -s ${RAW_CONTENT_URL}/docker-compose.yaml > ./docker-compose.yaml
-  # PULL UPDATED README & .ENV EXAMPLE (I mean, why not, right?)
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling updated README & .env example...${RESET}" 
+  # PULL UPDATED README (I mean, why not, right?)
+  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} CURLing README.md...${RESET}" 
   curl -s ${RAW_CONTENT_URL}/README.md > ./README.md
-  curl -s ${RAW_CONTENT_URL}/.env.example > ./.env.example
-  # PULL UPDATED PACKAGE.JSON (purely so the new version is reflected)
-  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Pulling updated package.json (to reflect the updated version)...${RESET}" 
-  curl -s ${RAW_CONTENT_URL}/package.json > ./package.json
   if [[ $SETUP_UPDATED == true ]]; then
+    echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Updated setup.sh detected. CURLing changes...${RESET}" 
+    curl -s ${RAW_CONTENT_URL}/setup.sh > ./setup.sh
     echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Running updated setup.sh...${RESET}" 
-    source ./setup.sh --skip-docker --skip-docker-compose
+    # If the user setup without the auto-updater, we don't want to override them
+    source ./setup.sh --skip-docker --skip-auto-updater
   fi
+  if [[ $DOTENV_UPDATED == true ]]; then
+    echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Updated .env.example detected. CURLing changes...${RESET}" 
+    curl -s ${RAW_CONTENT_URL}/.env.example > ./.env.example
+    echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} Applying .env changes...${RESET}" 
+
+    # Apply .env.example updates to the local .env
+
+    # TODO: Load all of the current variables from the .env into the environment variables so we can carry them over
+
+    # set -o allexport
+    # source ./.env
+    # set +o allexport
+
+    # rm -f ./.env
+    # cp ./.env.example ./.env
+
+    # TODO: Move all existing and valid old .env values to the new .env
+  fi
+  # PULL UPDATED PACKAGE.JSON (purely so the new version is reflected)
+  echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${BLUE_TEXT} CURLing updated package.json (to reflect the new version)...${RESET}" 
+  curl -s ${RAW_CONTENT_URL}/package.json > ./package.json
 else
   echo "${RESET}${YELLOW_TEXT}[${BOLD}TTL Updater${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} No upstream updates found. Local scripts & files should be up-to-date!${RESET}"
 fi
