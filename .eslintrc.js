@@ -61,6 +61,8 @@ module.exports = {
       "eqeqeq": "error",
       "guard-for-in": "error",
       "import/order": "error",
+      // Handled by typescript
+      "import/no-unresolved": "off",
       "new-parens": "error",
       "no-caller": "error",
       "no-constant-condition": "off",

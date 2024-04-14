@@ -39,5 +39,6 @@
     "./src/**/*",
     "./test/**/*",
     "./.eslintrc.js",
+    "./drizzle.config.ts",
   ],
 }
