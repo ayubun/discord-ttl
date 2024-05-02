@@ -10,8 +10,19 @@ export const userTtlSettings = sqliteTable('user_ttl_settings', {
   userId: text('user_id').notNull(),
   serverId: text('server_id'),
   channelId: text('channel_id'),
-  messageTtl: integer('message_ttl'), // null represents no ttl
+  ttl: integer('ttl'), // null represents no ttl
   includePins: integer('include_pins', { mode: 'boolean' }),
+});
+
+const FIVE_MINUTES_IN_SECONDS: number = 300;
+
+export const serverTtlSettings = sqliteTable('server_ttl_settings', {
+  serverId: text('server_id').notNull(),
+  channelId: text('channel_id'),
+  defaultTtl: integer('default_ttl'), // null represents no ttl
+  maxTtl: integer('max_ttl'), // null represents no max ttl
+  minTtl: integer('min_ttl').default(FIVE_MINUTES_IN_SECONDS), // null represents no min ttl (30 seconds is hardcoded)
+  includePinsByDefault: integer('include_pins_by_default', { mode: 'boolean' }).notNull().default(true),
 });
 
 /*
@@ -31,17 +42,6 @@ Reset server-level ttl settings to defaults:
 /settings clear current-channel
 /settings clear server-wide `clear-all-channels:true (defaults false)`
 */
-
-const FIVE_MINUTES_IN_SECONDS: number = 300;
-
-export const serverTtlSettings = sqliteTable('server_ttl_settings', {
-  serverId: text('server_id').notNull(),
-  channelId: text('channel_id'),
-  defaultMessageTtl: integer('default_message_ttl'), // null represents no ttl (indefinite)
-  maxMessageTtl: integer('max_message_ttl'), // null represents no max ttl (infinite)
-  minMessageTtl: integer('min_message_ttl').default(FIVE_MINUTES_IN_SECONDS), // null represents no min ttl (indefinite)
-  includePinsByDefault: integer('include_pins_by_default', { mode: 'boolean' }).notNull().default(true),
-});
 
 
 // server + channel; pins + ttl + disableUserTtls here

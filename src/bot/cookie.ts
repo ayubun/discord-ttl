@@ -1,7 +1,7 @@
 /**
- * bunny.ts is a TypeScript file that dynamically handles parity between
- * compatible `command/` files and the Discord API. The bunny.ts 'API' provides
- * a `BunnyClient` wrapper for the Discord.js `Client` class, which is
+ * cookie.ts is a TypeScript file that dynamically handles parity between
+ * compatible `command/` files and the Discord API. The cookie.ts 'API' provides
+ * a `CookieClient` wrapper for the Discord.js `Client` class, which is
  * responsible for registering, routing, and executing application commands.
  */
 import fs from 'node:fs';
@@ -22,9 +22,9 @@ import {
 } from 'discord.js';
 
 /**
- * BunnyClient is a Discord.js client abstraction that handles application commands :3
+ * CookieClient is a Discord.js client abstraction that handles application commands :3
  */
-export class BunnyClient extends Client {
+export class CookieClient extends Client {
   private command_tree: Record<string, any>;
 
   public constructor(options: ClientOptions) {
@@ -32,52 +32,52 @@ export class BunnyClient extends Client {
     // listen for 'ready' event (which is sent when the bot connects to the discord api) because we
     // use some information returned from the api to register our commands (such as the client id)
     super.on('ready', () => {
-      BunnyLogger.info('Setting up application commands...');
+      CookieLogger.info('Setting up application commands...');
       this.deployCommands()
         .then(() => {
           // this routes our interactions (a.k.a. application commands) to our own handler methods c:
           super.on(Events.InteractionCreate, async interaction => this.handleInteraction(interaction));
-          BunnyLogger.info('The bot is now receiving & processing application commands');
+          CookieLogger.info('The bot is now receiving & processing application commands');
         })
         .catch((err: any) => {
-          BunnyLogger.error('Encountered a fatal error while deploying commands:', err);
+          CookieLogger.error('Encountered a fatal error while deploying commands:', err);
           process.exit(1);
         });
     });
     // load all commands from the commands directory
-    this.command_tree = BunnyClient.buildCommandTree();
+    this.command_tree = CookieClient.buildCommandTree();
   }
 
   /**
-   * Returns a `command_tree` for the BunnyClient based on files/folders within the `commands/` directory.
+   * Returns a `command_tree` for the CookieClient based on files/folders within the `commands/` directory.
    *
    * The command tree will look something like this:
    * 'ttl': {
-   *   'set': BunnyCommand from File('./commands/ttl/set.ts'),
-   *   'unset': BunnyCommand from File('./commands/ttl/unset.ts'),
-   *   'info': BunnyCommand from File('./commands/ttl/info.ts'),
+   *   'set': CookieCommand from File('./commands/ttl/set.ts'),
+   *   'unset': CookieCommand from File('./commands/ttl/unset.ts'),
+   *   'info': CookieCommand from File('./commands/ttl/info.ts'),
    * }
    */
   private static buildCommandTree() {
     const root_commands_path = path.join(import.meta.dir, 'commands');
 
-    function mapCommandPathsToBunnyCommandsRecursively(current_dir: string): Record<string, any> {
+    function mapCommandPathsToCookieCommandsRecursively(current_dir: string): Record<string, any> {
       const command_tree: Record<string, any> = {};
       fs.readdirSync(current_dir).map(file_name => {
         const full_file_path = path.join(current_dir, file_name);
         if (fs.lstatSync(full_file_path).isDirectory()) {
-          command_tree[file_name] = mapCommandPathsToBunnyCommandsRecursively(full_file_path);
+          command_tree[file_name] = mapCommandPathsToCookieCommandsRecursively(full_file_path);
         }
         if (!file_name.endsWith('.js')) {
           return;
         }
-        const bunny_command = BunnyCommand.fromFile(full_file_path);
-        command_tree[bunny_command.getName()] = bunny_command;
+        const cookie_command = CookieCommand.fromFile(full_file_path);
+        command_tree[cookie_command.getName()] = cookie_command;
       });
       return command_tree;
     }
 
-    return mapCommandPathsToBunnyCommandsRecursively(root_commands_path);
+    return mapCommandPathsToCookieCommandsRecursively(root_commands_path);
   }
 
   /**
@@ -100,7 +100,7 @@ export class BunnyClient extends Client {
         // for subcommand groups / parent commands. This shouldn't be visible to users though
         description: 'bun',
       };
-      if (BunnyCommand.isBunnyCommand(current_command_tree)) {
+      if (CookieCommand.isCookieCommand(current_command_tree)) {
         const cmd = current_command_tree;
         switch (current_depth) {
           case 0: // Command layer
@@ -144,7 +144,7 @@ export class BunnyClient extends Client {
 
     const payload = { body: commands };
     const rest = new REST().setToken(this.token);
-    BunnyLogger.debug(
+    CookieLogger.debug(
       `Sending 'PUT ${Routes.applicationCommands(this.user.id)}' with the following payload:`,
       `${JSON.stringify(payload, undefined, 2)}`,
     );
@@ -155,7 +155,7 @@ export class BunnyClient extends Client {
       `Expected to update ${commands.length} command${commands.length === 1 ? '' : 's'} but` +
         ` ${data.length} ${data.length === 1 ? 'was' : 'were'} successful.`,
     );
-    BunnyLogger.debug(
+    CookieLogger.debug(
       `Successfully PUT ${commands.length} command${commands.length === 1 ? '' : 's'} to the Discord API!`,
     );
   }
@@ -181,13 +181,13 @@ export class BunnyClient extends Client {
     }
     // Fill the `full_command_name` array based on a recursive traversal of the interaction options
     traverseOptionsRecursively(interaction.options.data);
-    BunnyLogger.debug(`Command '/${full_command_name.join(' ')}' invoked by user ${interaction.user.id}`);
+    CookieLogger.debug(`Command '/${full_command_name.join(' ')}' invoked by user ${interaction.user.id}`);
 
     // Use the `full_command_name` to power logs & command discovery
     let command = this.command_tree;
     full_command_name.forEach(command_name => {
       if (!(command_name in command)) {
-        BunnyLogger.error(`Invariant: Missing '${command_name}' from command '/${full_command_name.join(' ')}'`);
+        CookieLogger.error(`Invariant: Missing '${command_name}' from command '/${full_command_name.join(' ')}'`);
         // We will ignore this because it is likely that our command tree does not match what is in the Discord API.
         // It is *technically* possible to reach this state if the command tree is updated recently, since the
         // Discord API can take an hour to update global commands.
@@ -195,8 +195,8 @@ export class BunnyClient extends Client {
       }
       command = command[command_name];
     });
-    if (!BunnyCommand.isBunnyCommand(command)) {
-      BunnyLogger.error(`Invariant: Command '/${full_command_name.join(' ')}' is not a BunnyCommand`);
+    if (!CookieCommand.isCookieCommand(command)) {
+      CookieLogger.error(`Invariant: Command '/${full_command_name.join(' ')}' is not a CookieCommand`);
       // Same issue as above. This can happen if the command tree is updated recently.
       // It shouldn't happen regularly, though
       return;
@@ -204,11 +204,11 @@ export class BunnyClient extends Client {
     // Cast and execute if the command is present in our command tree
     try {
       await command.execute(interaction);
-      BunnyLogger.debug(
+      CookieLogger.debug(
         `Command '/${command.getFullCommandName()}' successfully executed for user ${interaction.user.id}`,
       );
     } catch (error) {
-      BunnyLogger.error(`Command '/${command.getFullCommandName()}' failed for user ${interaction.user.id}:`, error);
+      CookieLogger.error(`Command '/${command.getFullCommandName()}' failed for user ${interaction.user.id}:`, error);
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
       } else {
@@ -219,9 +219,9 @@ export class BunnyClient extends Client {
 }
 
 /**
- * `BunnyCommand` is a wrapper for command files that can be executed by the `BunnyClient`
+ * `CookieCommand` is a wrapper for command files that can be executed by the `CookieClient`
  */
-export class BunnyCommand {
+export class CookieCommand {
   private data: Record<string, any>;
   private onExecute: CallableFunction;
   private fullCommandName: string[];
@@ -232,13 +232,13 @@ export class BunnyCommand {
     this.fullCommandName = fullCommandName;
   }
 
-  public static isBunnyCommand(command: any): command is BunnyCommand {
+  public static isCookieCommand(command: any): command is CookieCommand {
     return (
       command &&
       'data' in command &&
-      (command as BunnyCommand).data !== undefined &&
+      (command as CookieCommand).data !== undefined &&
       'onExecute' in command &&
-      (command as BunnyCommand).onExecute !== undefined
+      (command as CookieCommand).onExecute !== undefined
     );
   }
 
@@ -268,7 +268,7 @@ export class BunnyCommand {
     }
   }
 
-  public static fromFile(filePath: string): BunnyCommand {
+  public static fromFile(filePath: string): CookieCommand {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile = require(filePath);
@@ -297,12 +297,12 @@ export class BunnyCommand {
       } else {
         jsonData.name = full_command_name[full_command_name.length - 1];
       }
-      BunnyCommand.assertCommandDataIsValid(jsonData as Record<string, any>);
-      BunnyLogger.debug(`Created BunnyCommand for command '/${full_command_name.join(' ')}'`);
-      return new BunnyCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
+      CookieCommand.assertCommandDataIsValid(jsonData as Record<string, any>);
+      CookieLogger.debug(`Created CookieCommand for command '/${full_command_name.join(' ')}'`);
+      return new CookieCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
     } catch (err) {
-      BunnyLogger.error(`Could not create BunnyCommand from file ${filePath}:`, String(err));
-      BunnyLogger.error(
+      CookieLogger.error(`Could not create CookieCommand from file ${filePath}:`, String(err));
+      CookieLogger.error(
         'This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.',
       );
       process.exit(1);
@@ -327,16 +327,16 @@ export class BunnyCommand {
 }
 
 /**
- * A console logs wrapper for bunny.ts-related logs.
- * bunny.ts uses it's own simple logger so that it can be used in other projects.
+ * A console logs wrapper for cookie.ts-related logs.
+ * cookie.ts uses it's own simple logger so that it can be used in other projects.
  */
-class BunnyLogger {
+class CookieLogger {
   // State
   private static IS_SETUP = false;
   // Defaults
-  private static BUNNY_DEBUG_LOGGING = false;
-  private static BUNNY_INFO_LOGGING = true;
-  private static BUNNY_ERROR_LOGGING = true;
+  private static COOKIE_DEBUG_LOGGING = false;
+  private static COOKIE_INFO_LOGGING = true;
+  private static COOKIE_ERROR_LOGGING = true;
 
   // I got the colour codes from here: https://ss64.com/nt/syntax-ansi.html
 
@@ -346,7 +346,7 @@ class BunnyLogger {
    */
   private static processLoggingEnv(variable: string) {
     if ((this as any)[variable] === undefined) {
-      console.log('\x1b[32mBunnyLogger does not have a variable called ' + variable);
+      console.log('\x1b[32mCookieLogger does not have a variable called ' + variable);
       process.exit(1);
     }
     const value = process.env[variable]?.toLocaleLowerCase();
@@ -372,9 +372,9 @@ class BunnyLogger {
    * Initiate the Logger singleton & print a startup message
    */
   private static startup() {
-    this.processLoggingEnv('BUNNY_DEBUG_LOGGING');
-    this.processLoggingEnv('BUNNY_INFO_LOGGING');
-    this.processLoggingEnv('BUNNY_ERROR_LOGGING');
+    this.processLoggingEnv('COOKIE_DEBUG_LOGGING');
+    this.processLoggingEnv('COOKIE_INFO_LOGGING');
+    this.processLoggingEnv('COOKIE_ERROR_LOGGING');
     this.IS_SETUP = true;
   }
 
@@ -382,10 +382,10 @@ class BunnyLogger {
     if (!this.IS_SETUP) {
       this.startup();
     }
-    if (!this.BUNNY_DEBUG_LOGGING) {
+    if (!this.COOKIE_DEBUG_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[90mDEBUG\x1b[0m]\x1b[90m');
+    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[90mDEBUG\x1b[0m]\x1b[90m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.debug(...args);
@@ -395,10 +395,10 @@ class BunnyLogger {
     if (!this.IS_SETUP) {
       this.startup();
     }
-    if (!this.BUNNY_INFO_LOGGING) {
+    if (!this.COOKIE_INFO_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[32mINFO\x1b[0m]\x1b[37m');
+    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[32mINFO\x1b[0m]\x1b[37m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.info(...args);
@@ -408,10 +408,10 @@ class BunnyLogger {
     if (!this.IS_SETUP) {
       this.startup();
     }
-    if (!this.BUNNY_ERROR_LOGGING) {
+    if (!this.COOKIE_ERROR_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mbunny.ts\x1b[0m] [\x1b[31mERROR\x1b[0m]\x1b[93m');
+    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[31mERROR\x1b[0m]\x1b[93m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.error(...args);

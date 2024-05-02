@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
-import { BunnyCommand } from '../../../bunny';
+import { CookieCommand } from '../../../cookie';
 import { getSecondsFromDurationString, isForeverTtl } from '../../../common/utils';
 
 // TODO: Make this command server admin only
@@ -21,7 +21,7 @@ const data = {
 };
 
 // TODO: Make the response non-ephemeral
-const onExecute = async (self: BunnyCommand, interaction: ChatInputCommandInteraction) => {
+const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInteraction) => {
   const durationString = interaction.options.getString('duration', true).toLocaleLowerCase();
   const isChannelTtl = interaction.options.getBoolean('channel', false) ? true : false;
   if (isForeverTtl(durationString)) {
