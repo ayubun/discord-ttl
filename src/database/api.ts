@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
-import { deleteMessageTtlQuery, selectMessageTtlQuery, updateMessageTtlQuery } from './queries';
 import { db } from "./db";
 dotenv.config();
 
@@ -14,43 +13,43 @@ export async function applyDatabaseMigrations() {
   migrate(db, { migrationsFolder: "drizzle" });
 }
 
+function constrainTtl(ttl: number | undefined): number | undefined {
+  if (!ttl) {
+    return ttl;
+  }
+  if (maxTtl !== undefined && ttl > maxTtl) {
+    return maxTtl;
+  }
+  if (minTtl !== undefined && ttl < minTtl) {
+    return minTtl;
+  }
+  return ttl;
+}
+
 export async function getMessageTtl(
   serverId: string,
   channelId: string | null,
   userId: string | null,
 ): Promise<number | undefined> {
-  function castMessageTtl(ttl: number): number | undefined {
-    if (maxTtl !== undefined && ttl > maxTtl) {
-      return maxTtl;
-    }
-    // -1 in the database represents a user-set infinite TTL
-    if (ttl < 0) {
-      return undefined;
-    }
-    return ttl;
-  }
 
   // user channel settings
   let ttl = await selectMessageTtlQuery(serverId, channelId, userId);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // user server settings
   ttl = await selectMessageTtlQuery(serverId, null, userId);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // server channel settings
   ttl = await selectMessageTtlQuery(serverId, channelId, null);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // server settings
   ttl = await selectMessageTtlQuery(serverId, null, null);
-  if (ttl !== undefined) {
-    return castMessageTtl(ttl);
-  }
-  return undefined;
+  return constrainTtl(ttl);
 }
 
 export async function updateMessageTtl(
