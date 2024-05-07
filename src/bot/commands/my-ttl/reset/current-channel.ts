@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
-import { BunnyCommand } from '../../bunny';
+import { CookieCommand } from '../../../cookie';
 
 const data = {
-  description: 'Unset your message TTL (time to live) for this server or channel',
+  description: 'Reset your message TTL (time to live) for this channel',
   options: [
     {
       type: ApplicationCommandOptionType.Boolean,
@@ -13,7 +13,7 @@ const data = {
 };
 
 // TODO: Make the response ephemeral
-const onExecute = async (self: BunnyCommand, interaction: ChatInputCommandInteraction) => {
+const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInteraction) => {
   const isChannelTtl = interaction.options.getBoolean('channel', false) ? true : false;
   await interaction.reply({
     content: `The \`/${self.getFullCommandName()}\` command is pending implementation (channel: \`${isChannelTtl}\`)`,

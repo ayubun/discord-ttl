@@ -1,30 +1,29 @@
-import fs from 'fs';
-import path from 'node:path';
 import dotenv from 'dotenv';
-import { Logger } from '../logger';
-import { deleteMessageTtlQuery, selectMessageTtlQuery, updateMessageTtlQuery, executeQuery } from './queries';
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { db } from "./db";
 dotenv.config();
 
 // some config values
 const maxTtlString = process.env['MAXIMUM_MESSAGE_TTL_IN_SECONDS'];
+const minTtlString = process.env['MINIMUM_MESSAGE_TTL_IN_SECONDS'];
 const maxTtl = maxTtlString ? Number(maxTtlString) : undefined;
+const minTtl = minTtlString ? Number(minTtlString) : undefined;
 
 export async function applyDatabaseMigrations() {
-  Logger.debug('Applying database migrations...');
-  const migrations_directory = path.join(import.meta.dir, 'migrations');
-  const sql_file_paths: string[] = [];
+  migrate(db, { migrationsFolder: "drizzle" });
+}
 
-  fs.readdirSync(migrations_directory).forEach(file => {
-    Logger.debug(`Found migration file: ${file}`);
-    sql_file_paths.push(path.join(migrations_directory, file));
-  });
-
-  for await (const file_path of sql_file_paths.sort().values()) {
-    const sql = fs.readFileSync(file_path, { encoding: 'utf8' });
-    Logger.debug('Executing migration:', file_path);
-    await executeQuery(sql);
-    Logger.debug('Successfully executed migration:', file_path);
+function constrainTtl(ttl: number | undefined): number | undefined {
+  if (!ttl) {
+    return ttl;
   }
+  if (maxTtl !== undefined && ttl > maxTtl) {
+    return maxTtl;
+  }
+  if (minTtl !== undefined && ttl < minTtl) {
+    return minTtl;
+  }
+  return ttl;
 }
 
 export async function getMessageTtl(
@@ -32,38 +31,25 @@ export async function getMessageTtl(
   channelId: string | null,
   userId: string | null,
 ): Promise<number | undefined> {
-  function castMessageTtl(ttl: number): number | undefined {
-    if (maxTtl !== undefined && ttl > maxTtl) {
-      return maxTtl;
-    }
-    // -1 in the database represents a user-set infinite TTL
-    if (ttl < 0) {
-      return undefined;
-    }
-    return ttl;
-  }
 
   // user channel settings
   let ttl = await selectMessageTtlQuery(serverId, channelId, userId);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // user server settings
   ttl = await selectMessageTtlQuery(serverId, null, userId);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // server channel settings
   ttl = await selectMessageTtlQuery(serverId, channelId, null);
   if (ttl !== undefined) {
-    return castMessageTtl(ttl);
+    return constrainTtl(ttl);
   }
   // server settings
   ttl = await selectMessageTtlQuery(serverId, null, null);
-  if (ttl !== undefined) {
-    return castMessageTtl(ttl);
-  }
-  return undefined;
+  return constrainTtl(ttl);
 }
 
 export async function updateMessageTtl(

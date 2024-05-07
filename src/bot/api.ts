@@ -1,7 +1,7 @@
 import { Partials } from 'discord.js';
 import { Logger } from '../logger';
 import { continuallyRetrieveAndDeleteMessages } from './core';
-import { BunnyClient } from './bunny';
+import { CookieClient as CookieClient } from './cookie';
 
 function getToken(): string {
   const token = process.env['DISCORD_BOT_TOKEN'];
@@ -14,7 +14,7 @@ function getToken(): string {
   return token;
 }
 
-export const bot = new BunnyClient({
+export const bot = new CookieClient({
   intents: ['Guilds'],
   partials: [Partials.Channel, Partials.Message],
 });

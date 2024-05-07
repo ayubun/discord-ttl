@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
-import { BunnyCommand } from '../../../bunny';
+import { CookieCommand } from '../../../cookie';
 
 // TODO: Make this command server admin only
 const data = {
@@ -14,7 +14,7 @@ const data = {
 };
 
 // TODO: Make the response non-ephemeral
-const onExecute = async (self: BunnyCommand, interaction: ChatInputCommandInteraction) => {
+const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInteraction) => {
   const isChannelTtl = interaction.options.getBoolean('channel', false) ? true : false;
   await interaction.reply({
     content: `The \`/${self.getFullCommandName()}\` command is pending implementation (channel: \`${isChannelTtl}\`)`,
