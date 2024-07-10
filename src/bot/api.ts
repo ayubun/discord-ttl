@@ -1,7 +1,7 @@
 import { Partials } from 'discord.js';
 import { Logger } from '../logger';
 import { continuallyRetrieveAndDeleteMessages } from './core';
-import { CookieClient as CookieClient } from './cookie';
+import { CookieClient } from './cookie';
 
 function getToken(): string {
   const token = process.env['DISCORD_BOT_TOKEN'];

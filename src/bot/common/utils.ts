@@ -17,7 +17,7 @@ export const isForeverTtl = (duration: string): boolean => {
  * For example, the duration string `1h 30min 10s` would return `5410`.
  * If the string does not have any parsable durations, this function returns `undefined`.
  */
-export const getSecondsFromDurationString = (duration: string): number | undefined => {
+export const getSecondsFromTimeString = (duration: string): number | undefined => {
   const secondsPerUnit = (unit: string): number | undefined => {
     switch (unit) {
       case 'seconds':

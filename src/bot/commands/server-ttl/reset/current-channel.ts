@@ -1,8 +1,9 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { PermissionFlagsBits, ChatInputCommandInteraction } from 'discord.js';
 import { CookieCommand } from '../../../cookie';
 
 const data = {
-  description: 'Reset your message TTL (time to live) for this channel',
+  default_member_permissions: PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild,
+  description: 'Unset the default message TTL (time to live) for everyone in this server or channel',
   options: [],
 };
 

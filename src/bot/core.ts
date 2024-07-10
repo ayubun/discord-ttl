@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
-import { getMessageTtl } from '../database/api';
+import { getEffectiveMessageTtl } from '../database/api';
 import { Logger } from '../logger';
 import { bot } from './api';
 
@@ -82,7 +82,7 @@ async function isMessageOlderThanTtl(
   channelId: string,
   message: { createdAt: { getTime: () => number }; author: User },
 ): Promise<boolean> {
-  const messageTtl = await getMessageTtl(serverId, channelId, message.author.id);
+  const messageTtl = await getEffectiveMessageTtl(serverId, channelId, message.author.id);
   if (!messageTtl) {
     return false;
   }
