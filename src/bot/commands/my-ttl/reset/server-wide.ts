@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'disco
 import { CookieCommand } from '../../../cookie';
 
 const data = {
-  description: 'Reset your message TTL (time to live) for this server',
+  description: 'Reset your TTL settings for this server',
   options: [
     {
       type: ApplicationCommandOptionType.Boolean,
@@ -14,7 +14,7 @@ const data = {
 
 const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInteraction) => {
   await interaction.reply({
-    content: `The \`/${self.getFullCommandName()}\` command is pending implementation`,
+    content: `The ${self.getMention()} command is pending implementation`,
     ephemeral: true,
   });
 };

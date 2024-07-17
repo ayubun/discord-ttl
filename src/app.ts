@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import figlet from 'figlet';
 import { loginToDiscordAndBeginDeleting } from './bot/api';
-import { applyDatabaseMigrations } from './database/api';
 import { Logger } from './logger';
 dotenv.config();
 
@@ -11,6 +10,4 @@ console.log('');
 Logger.startup();
 Logger.info('Starting up...');
 
-await applyDatabaseMigrations()
-  .then(() => loginToDiscordAndBeginDeleting())
-  .catch(e => Logger.error(e));
+loginToDiscordAndBeginDeleting();

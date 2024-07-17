@@ -13,10 +13,11 @@
     "pretty-fix"
   ],
   "dependencies": {
-    "discord.js": "^14.9.0",
+    "discord.js": "^14.15.0",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.29.3",
     "figlet": "^1.7.0",
+    "pretty-seconds": "^3.0.1",
     "typescript": "^5.0.4"
   },
   "scripts": {

@@ -8,8 +8,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert';
 import {
+  ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
   type CacheType,
   ChatInputCommandInteraction,
   Client,
@@ -29,14 +33,20 @@ export class CookieClient extends Client {
 
   public constructor(options: ClientOptions) {
     super(options);
+    // load all commands from the commands directory
+    this.command_tree = CookieClient.buildCommandTree();
     // listen for 'ready' event (which is sent when the bot connects to the discord api) because we
     // use some information returned from the api to register our commands (such as the client id)
     super.on('ready', () => {
       CookieLogger.info('Setting up application commands...');
       this.deployCommands()
-        .then(() => {
+        .then(async data => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await this.populateCommandIds(data).catch(e => CookieLogger.error('Could not populate command ids:', e));
           // this routes our interactions (a.k.a. application commands) to our own handler methods c:
-          super.on(Events.InteractionCreate, async interaction => this.handleInteraction(interaction));
+          // https://stackoverflow.com/questions/63488141/promise-returned-in-function-argument-where-a-void-return-was-expected
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          super.on(Events.InteractionCreate, async interaction => await this.handleInteraction(interaction));
           CookieLogger.info('The bot is now receiving & processing application commands');
         })
         .catch((err: any) => {
@@ -44,8 +54,6 @@ export class CookieClient extends Client {
           process.exit(1);
         });
     });
-    // load all commands from the commands directory
-    this.command_tree = CookieClient.buildCommandTree();
   }
 
   /**
@@ -84,7 +92,7 @@ export class CookieClient extends Client {
    * Deploys the application commands to the Discord API.
    * https://discord.com/developers/docs/interactions/application-commands#example-walkthrough
    */
-  private async deployCommands() {
+  private async deployCommands(): Promise<any> {
     assert(this.token, 'Invariant: Missing valid token');
     assert(this.user?.id, 'Invariant: Missing valid client id');
 
@@ -158,6 +166,39 @@ export class CookieClient extends Client {
     CookieLogger.debug(
       `Successfully PUT ${commands.length} command${commands.length === 1 ? '' : 's'} to the Discord API!`,
     );
+    return data;
+  }
+
+  /**
+   * Populates the `commandId` field for each `CookieCommand` in the `command_tree`.
+   *
+   * @param data The data returned from the Discord API after deploying commands
+   */
+  private async populateCommandIds(data: { id: string; name: string }[]) {
+    const command_names_to_ids: Record<string, string> = {};
+    for (const command_object of data) {
+      command_names_to_ids[command_object.name] = command_object.id;
+    }
+
+    function traverseCommandTreeRecursively(
+      command_id: string,
+      current_command_tree: Record<string, any> | CookieCommand,
+    ) {
+      if (CookieCommand.isCookieCommand(current_command_tree)) {
+        const cmd: CookieCommand = current_command_tree;
+        cmd.setId(command_id);
+      } else {
+        for (const tree_key of Object.keys(current_command_tree)) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          traverseCommandTreeRecursively(command_id, current_command_tree[tree_key]);
+        }
+      }
+    }
+
+    for (const command of Object.keys(this.command_tree)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      traverseCommandTreeRecursively(command_names_to_ids[command], this.command_tree[command]);
+    }
   }
 
   private async handleInteraction(interaction: Interaction<CacheType>) {
@@ -225,11 +266,13 @@ export class CookieCommand {
   private data: Record<string, any>;
   private onExecute: CallableFunction;
   private fullCommandName: string[];
+  private id: string | undefined;
 
   public constructor(data: Record<string, any>, executeFunction: CallableFunction, fullCommandName: string[]) {
     this.data = data;
     this.onExecute = executeFunction;
     this.fullCommandName = fullCommandName;
+    this.id = undefined;
   }
 
   public static isCookieCommand(command: any): command is CookieCommand {
@@ -309,6 +352,17 @@ export class CookieCommand {
     }
   }
 
+  public setId(id: string) {
+    this.id = id;
+  }
+
+  public getMention(): string {
+    if (this.id === undefined) {
+      return '`/' + this.getFullCommandName() + '`';
+    }
+    return `</${this.getFullCommandName()}:${this.id}>`;
+  }
+
   public getFullCommandName(): string {
     return this.fullCommandName.join(' ');
   }
@@ -326,9 +380,192 @@ export class CookieCommand {
   }
 }
 
+interface CookieConfirmationResult {
+  confirmed: boolean;
+  cancelled: boolean;
+  timedOut: boolean;
+}
+
+export class CookieConfirmationMenu {
+  private response: ButtonInteraction | undefined;
+  private result: CookieConfirmationResult;
+  private promptPrefix: string;
+  private promptMessage: string;
+  private successPrefix: string;
+  private successMessage: string;
+  private cancelPrefix: string;
+  private cancelMessage: string;
+  private timeoutPrefix: string;
+  private timeoutMessage: string;
+
+  public constructor(public command: CookieCommand, public interaction: ChatInputCommandInteraction) {
+    this.command = command;
+    this.interaction = interaction;
+    this.response = undefined;
+    this.result = { confirmed: false, cancelled: false, timedOut: false };
+    this.promptPrefix = '૮ . . ྀིა';
+    this.promptMessage = 'Are you sure you would like to proceed?';
+    this.successPrefix = '(⸝⸝⸝• ω •⸝⸝⸝) ♡';
+    this.successMessage = `${command.getMention()} was confirmed.\n*It may take a moment for changes to take place.*`;
+    this.cancelPrefix = '(￣^￣ゞ';
+    this.cancelMessage = `${command.getMention()} was cancelled.\n*No changes were made.*`;
+    this.timeoutPrefix = '( •́ ∧ •̀ )';
+    this.timeoutMessage = `${command.getMention()} did not receive user confirmation in time.\n*No changes were made.*`;
+  }
+
+  public setPromptPrefix(prefix: string) {
+    this.promptPrefix = prefix;
+    return this;
+  }
+
+  public setPromptMessage(message: string) {
+    this.promptMessage = message;
+    return this;
+  }
+
+  public setSuccessPrefix(prefix: string) {
+    this.successPrefix = prefix;
+    return this;
+  }
+
+  public setSuccessMessage(message: string) {
+    this.successMessage = message;
+    return this;
+  }
+
+  public setCancelPrefix(prefix: string) {
+    this.cancelPrefix = prefix;
+    return this;
+  }
+
+  public setCancelMessage(message: string) {
+    this.cancelMessage = message;
+    return this;
+  }
+
+  public setTimeoutPrefix(prefix: string) {
+    this.timeoutPrefix = prefix;
+    return this;
+  }
+
+  public setTimeoutMessage(message: string) {
+    this.timeoutMessage = message;
+    return this;
+  }
+
+  public isConfirmed(): boolean {
+    return this.result.confirmed;
+  }
+
+  public isCancelled(): boolean {
+    return this.result.cancelled;
+  }
+
+  public isTimedOut(): boolean {
+    return this.result.timedOut;
+  }
+
+  public async prompt(): Promise<this> {
+    const confirm = new ButtonBuilder().setCustomId('confirm').setLabel('Confirm').setStyle(ButtonStyle.Success);
+
+    const cancel = new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirm, cancel);
+
+    const promise = await this.interaction.reply({
+      embeds: [
+        {
+          description: this.promptPrefix + (this.promptPrefix ? ' ' : '') + this.promptMessage,
+        },
+      ],
+      content: this.promptPrefix + (this.promptPrefix ? ' ' : '') + this.promptMessage,
+      components: [row],
+      ephemeral: true,
+    });
+
+    const collectorFilter = (i: { user: { id: string } }) => i.user.id === this.interaction.user.id;
+
+    try {
+      const confirmation = await promise.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+      assert(confirmation instanceof ButtonInteraction);
+      this.response = confirmation;
+      if (confirmation.customId === 'confirm') {
+        this.result.confirmed = true;
+      } else if (confirmation.customId === 'cancel') {
+        this.result.cancelled = true;
+      }
+    } catch (e) {
+      this.result.timedOut = true;
+    }
+    return this;
+  }
+
+  public async update() {
+    if (this.isConfirmed()) {
+      await this.response!.update({
+        embeds: [
+          {
+            description: this.successPrefix + (this.successPrefix ? ' ' : '') + this.successMessage,
+          },
+        ],
+        components: [],
+      });
+    } else if (this.isCancelled()) {
+      await this.response!.update({
+        embeds: [
+          {
+            description: this.cancelPrefix + (this.cancelPrefix ? ' ' : '') + this.cancelMessage,
+          },
+        ],
+        components: [],
+      });
+    } else if (this.isTimedOut()) {
+      await this.interaction.editReply({
+        embeds: [
+          {
+            description: this.timeoutPrefix + (this.timeoutPrefix ? ' ' : '') + this.timeoutMessage,
+          },
+        ],
+        components: [],
+      });
+    }
+  }
+
+  public async error(message: string = '') {
+    const errorMessage =
+      `( ꩜ ᯅ ꩜;) An unexpected error occurred while executing ${this.command.getMention()}` +
+      (message ? `:\n\n${message}` : '');
+    if (this.response !== undefined) {
+      await this.response.update({
+        embeds: [
+          {
+            description: errorMessage,
+          },
+        ],
+        components: [],
+      });
+    } else {
+      await this.interaction.editReply({
+        embeds: [
+          {
+            description: errorMessage,
+          },
+        ],
+        components: [],
+      });
+    }
+  }
+
+  public async promptAndUpdate(): Promise<this> {
+    await this.prompt();
+    await this.update();
+    return this;
+  }
+}
+
 /**
  * A console logs wrapper for cookie.ts-related logs.
- * cookie.ts uses it's own simple logger so that it can be used in other projects.
+ * cookie.ts uses it's own simple logger so that it can be used in other projects without a logger dependency.
  */
 class CookieLogger {
   // State

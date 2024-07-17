@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
-import { getEffectiveMessageTtl } from '../database/api';
+import { getServerChannelSettings, getServerSettings } from '../database/api';
 import { Logger } from '../logger';
 import { bot } from './api';
 
@@ -82,11 +82,14 @@ async function isMessageOlderThanTtl(
   channelId: string,
   message: { createdAt: { getTime: () => number }; author: User },
 ): Promise<boolean> {
-  const messageTtl = await getEffectiveMessageTtl(serverId, channelId, message.author.id);
-  if (!messageTtl) {
+  const channelSettings = await getServerChannelSettings(serverId, channelId);
+  const serverSettings = await getServerSettings(serverId);
+  const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
+  const ttl = effectiveSettings.getDefaultMessageTtl();
+  if (!ttl) {
     return false;
   }
-  return message.createdAt.getTime() < Date.now() - messageTtl * 1000;
+  return message.createdAt.getTime() < Date.now() - ttl * 1000;
 }
 
 function canMessageBeBulkDeleted(message: { createdAt: { getTime: () => number } }): boolean {

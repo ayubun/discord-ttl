@@ -9,7 +9,6 @@ const sqlite = new Database('data/discord-ttl.db');
 // docs: https://orm.drizzle.team/docs/get-started-sqlite#bun-sqlite
 // https://orm.drizzle.team/learn/guides/conditional-filters-in-query
 const db = drizzle(sqlite);
-
 migrate(db, { migrationsFolder: 'drizzle' });
 
 export async function selectServerSettings(serverId: string): Promise<ServerSettings | undefined> {
@@ -59,6 +58,10 @@ export async function upsertServerChannelSettings(newServerChannelSettings: Serv
       set: newServerChannelSettings.data,
     })
     .execute();
+}
+
+export async function deleteAllServerSettings(serverId: string): Promise<void> {
+  await db.delete(serverSettings).where(eq(serverSettings.serverId, serverId)).execute();
 }
 
 /*

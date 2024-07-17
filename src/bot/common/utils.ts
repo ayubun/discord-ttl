@@ -1,12 +1,36 @@
-export const isForeverTtl = (duration: string): boolean => {
+import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from 'src/common/types';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const prettySeconds = require('pretty-seconds');
+
+export const isResetString = (input: string | undefined): boolean => {
+  switch (input) {
+    case 'default':
+    case 'reset':
+      return true;
+  }
+  return false;
+};
+
+export const isForeverTtl = (duration: number | string | undefined): boolean => {
+  if (duration === undefined) {
+    return false;
+  }
+  if (typeof duration === 'number') {
+    return duration <= 0 || duration === FOREVER_TTL;
+  }
   switch (duration) {
     case 'forever':
-    case 'disable':
-    case 'disabled':
-    case 'off':
-    case 'none':
     case '0':
     case '-1':
+    case 'none':
+    case 'no':
+    case 'unset':
+    case 'null':
+    case 'off':
+    case 'disable':
+    case 'disabled':
+    case String(FOREVER_TTL):
       return true;
   }
   return false;
@@ -78,4 +102,76 @@ export const getSecondsFromTimeString = (duration: string): number | undefined =
     return undefined;
   }
   return seconds;
+};
+
+function getTtlDisplayString(friendlyTtl: number | undefined, rawTtl: number | undefined | null): string {
+  let str = '';
+  if (friendlyTtl === undefined) {
+    str += '`Forever`';
+  } else {
+    str += '**' + String(prettySeconds(friendlyTtl)) + '**';
+  }
+  if (rawTtl === undefined || rawTtl === null) {
+    str += ' (*default*)';
+  }
+  return str;
+}
+function getBooleanDisplayString(friendlyBoolean: boolean, rawBoolean: boolean | undefined | null): string {
+  let str = '`' + String(friendlyBoolean) + '`';
+  if (rawBoolean === undefined || rawBoolean === null) {
+    str += ' (*default*)';
+  }
+  return str;
+}
+
+export const getServerSettingsDisplay = (
+  settings: ServerSettings | ServerChannelSettings,
+  header = '### __Current Settings__',
+): string => {
+  let display = header + '\n';
+  display +=
+    '- __Default TTL__: ' + getTtlDisplayString(settings.getDefaultMessageTtl(), settings.defaultMessageTtl) + '\n';
+  display += `  - __User Minimum__: ${getTtlDisplayString(settings.getMinMessageTtl(), settings.minMessageTtl)}\n`;
+  display += `  - __User Maximum__: ${getTtlDisplayString(settings.getMaxMessageTtl(), settings.maxMessageTtl)}\n`;
+  display += `- __Include Pins By Default__: ${getBooleanDisplayString(
+    settings.getIncludePinsByDefault(),
+    settings.includePinsByDefault,
+  )}\n`;
+  return display;
+};
+
+export const getServerSettingsDiff = (
+  oldSettings: ServerSettings | ServerChannelSettings,
+  newSettings: ServerSettings | ServerChannelSettings,
+  header = '### __Settings Changes__',
+): string => {
+  let diff = header + '\n';
+  if (oldSettings === newSettings) {
+    return diff + 'No changes are being made\n';
+  }
+  if (oldSettings.defaultMessageTtl !== newSettings.defaultMessageTtl) {
+    diff += `- __Default TTL__: ${getTtlDisplayString(
+      oldSettings.getDefaultMessageTtl(),
+      oldSettings.defaultMessageTtl,
+    )} **→** ${getTtlDisplayString(newSettings.getDefaultMessageTtl(), newSettings.defaultMessageTtl)}\n`;
+  }
+  if (oldSettings.minMessageTtl !== newSettings.minMessageTtl) {
+    diff += `- __User TTL Mininum__: ${getTtlDisplayString(
+      oldSettings.getMinMessageTtl(),
+      oldSettings.minMessageTtl,
+    )} **→** ${getTtlDisplayString(oldSettings.getMinMessageTtl(), newSettings.minMessageTtl)}\n`;
+  }
+  if (oldSettings.maxMessageTtl !== newSettings.maxMessageTtl) {
+    diff += `- __User TTL Maximum__: ${getTtlDisplayString(
+      oldSettings.getMaxMessageTtl(),
+      oldSettings.maxMessageTtl,
+    )} **→** ${getTtlDisplayString(oldSettings.getMaxMessageTtl(), newSettings.maxMessageTtl)}\n`;
+  }
+  if (oldSettings.includePinsByDefault !== newSettings.includePinsByDefault) {
+    diff += `- __Include Pins By Default__: ${getBooleanDisplayString(
+      oldSettings.getIncludePinsByDefault(),
+      oldSettings.includePinsByDefault,
+    )} **→** ${getBooleanDisplayString(oldSettings.getIncludePinsByDefault(), newSettings.includePinsByDefault)}\n`;
+  }
+  return diff;
 };
