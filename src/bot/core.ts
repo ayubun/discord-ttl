@@ -12,16 +12,16 @@ let numTotalDeletedMessages: number = 0;
 export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
-    debug('Running retrieveAndDeleteMessages()...');
+    debug('[bot/core] Running retrieveAndDeleteMessages()...');
     numSingularDeletedMessages = 0;
     numBulkDeletedMessages = 0;
     numTotalDeletedMessages = 0;
     await retrieveAndDeleteMessages();
     if (numTotalDeletedMessages === 0) {
-      debug('No deletable messages were found. Waiting 30 seconds');
+      debug('[bot/core] No deletable messages were found. Waiting 30 seconds');
     } else {
       debug(
-        `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
+        `[bot/core] Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
         `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}). Waiting 30 seconds`,
       );
     }
@@ -80,13 +80,16 @@ function canGetAndDeleteMessages(channel: GuildTextBasedChannel): boolean {
 async function isMessageOlderThanTtl(
   serverId: string,
   channelId: string,
-  message: { createdAt: { getTime: () => number }; author: User },
+  message: { createdAt: { getTime: () => number }; author: User; pinned: boolean },
 ): Promise<boolean> {
   const channelSettings = await getServerChannelSettings(serverId, channelId);
   const serverSettings = await getServerSettings(serverId);
   const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
   const ttl = effectiveSettings.getDefaultMessageTtl();
   if (!ttl) {
+    return false;
+  }
+  if (message.pinned && !effectiveSettings.getIncludePinsByDefault()) {
     return false;
   }
   return message.createdAt.getTime() < Date.now() - ttl * 1000;
@@ -104,7 +107,7 @@ async function collectDeletableMessages(
 ): Promise<Collection<string, Message<boolean>>> {
   return Promise.resolve(
     messages.filter(
-      async (message: { createdAt: { getTime: () => number }; author: User }) =>
+      async (message: { createdAt: { getTime: () => number }; author: User; pinned: boolean }) =>
         await isMessageOlderThanTtl(guildId, channelId, message),
     ),
   );

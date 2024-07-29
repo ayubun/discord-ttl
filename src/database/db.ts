@@ -13,6 +13,7 @@ const db = drizzle(sqlite);
 migrate(db, { migrationsFolder: 'drizzle' });
 
 export async function selectServerSettings(serverId: string): Promise<ServerSettings | undefined> {
+  debug('[database] selectServerSettings', serverId);
   const result = await db
     .select()
     .from(serverSettings)
@@ -28,6 +29,7 @@ export async function selectServerChannelSettings(
   serverId: string,
   channelId: string,
 ): Promise<ServerChannelSettings | undefined> {
+  debug('[database] selectServerChannelSettings', serverId, channelId);
   const result = await db
     .select()
     .from(serverSettings)
