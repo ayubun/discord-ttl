@@ -1,4 +1,4 @@
-import { text, integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { text, integer, sqliteTable, primaryKey } from 'drizzle-orm/sqlite-core';
 
 // tables ૮ ˶ᵔ ᵕ ᵔ˶ ა
 // source: https://orm.drizzle.team/docs/column-types/sqlite
@@ -16,11 +16,19 @@ import { text, integer, sqliteTable } from 'drizzle-orm/sqlite-core';
 //   includePins: integer('include_pins', { mode: 'boolean' }),
 // });
 
-export const serverSettings = sqliteTable('server_settings', {
-  serverId: text('server_id').notNull(),
-  channelId: text('channel_id'),
-  defaultMessageTtl: integer('default_message_ttl'), // null represents no ttl
-  maxMessageTtl: integer('max_message_ttl'), // null represents no max ttl
-  minMessageTtl: integer('min_message_ttl'), // null represents no min ttl (30 seconds is hardcoded)
-  includePinsByDefault: integer('include_pins_by_default', { mode: 'boolean' }),
-});
+export const serverSettings = sqliteTable(
+  'server_settings',
+  {
+    serverId: text('server_id').notNull(),
+    channelId: text('channel_id'),
+    defaultMessageTtl: integer('default_message_ttl'), // null represents no ttl
+    maxMessageTtl: integer('max_message_ttl'), // null represents no max ttl
+    minMessageTtl: integer('min_message_ttl'), // null represents no min ttl (30 seconds is hardcoded)
+    includePinsByDefault: integer('include_pins_by_default', { mode: 'boolean' }),
+  },
+  table => {
+    return {
+      pk: primaryKey({ columns: [table.serverId, table.channelId] }),
+    };
+  },
+);

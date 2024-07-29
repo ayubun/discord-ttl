@@ -2,6 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import Database from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { debug } from '../logger';
 import { ServerSettings, ServerChannelSettings, type ServerSettingsData } from '../common/types';
 import { serverSettings } from './tables';
 
@@ -39,28 +40,31 @@ export async function selectServerChannelSettings(
 }
 
 export async function upsertServerSettings(newServerSettings: ServerSettings): Promise<void> {
+  debug('[database] upsertServerSettings', JSON.stringify(newServerSettings, null, 2));
   await db
     .insert(serverSettings)
-    .values(newServerSettings.data)
+    .values(newServerSettings.getData())
     .onConflictDoUpdate({
-      target: serverSettings.serverId,
-      set: newServerSettings.data,
+      target: [serverSettings.serverId, serverSettings.channelId],
+      set: newServerSettings.getData(),
     })
     .execute();
 }
 
 export async function upsertServerChannelSettings(newServerChannelSettings: ServerChannelSettings): Promise<void> {
+  debug('[database] upsertServerChannelSettings', JSON.stringify(newServerChannelSettings, null, 2));
   await db
     .insert(serverSettings)
-    .values(newServerChannelSettings.data)
+    .values(newServerChannelSettings.getData())
     .onConflictDoUpdate({
       target: [serverSettings.serverId, serverSettings.channelId],
-      set: newServerChannelSettings.data,
+      set: newServerChannelSettings.getData(),
     })
     .execute();
 }
 
 export async function deleteAllServerSettings(serverId: string): Promise<void> {
+  debug('[database] deleteAllServerSettings', serverId);
   await db.delete(serverSettings).where(eq(serverSettings.serverId, serverId)).execute();
 }
 

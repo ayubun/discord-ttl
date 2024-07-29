@@ -2,45 +2,21 @@
  * A console logs wrapper for prettier logs.
  * Console colour codes source: https://ss64.com/nt/syntax-ansi.html
  */
-export class Logger {
+class Logger {
+  private enabled: string[];
+  private disabled: string[];
   // Defaults
-  private static DEBUG_LOGGING = false;
-  private static INFO_LOGGING = true;
-  private static ERROR_LOGGING = true;
+  private DEBUG_LOGGING = false;
+  private INFO_LOGGING = true;
+  private ERROR_LOGGING = true;
 
-  /**
-   * Startup helper function to process .env variables for logging
-   * @param variable The name of the logging variable to process
-   */
-  private static processLoggingEnvs(variables: string[]) {
-    const enabled: string[] = [];
-    const disabled: string[] = [];
-    for (const variable of variables) {
-      if ((this as any)[variable] === undefined) {
-        console.log('Logger does not have a variable called ' + variable);
-        process.exit(1);
-      }
-      const value = process.env[variable]?.toLocaleLowerCase();
-      if (value !== undefined) {
-        const logging_type = variable.split('_')[0];
-        if (value === 'false') {
-          (this as any)[variable] = false;
-          disabled.push(logging_type);
-        } else if (value === 'true') {
-          (this as any)[variable] = true;
-          enabled.push(logging_type);
-        } else {
-          console.log(
-            '\x1b[32mInvalid value for variable "' +
-              variable +
-              '" in the .env (expected true or false, found ' +
-              value +
-              ')',
-          );
-          process.exit(1);
-        }
-      }
-    }
+  public constructor() {
+    this.enabled = [];
+    this.disabled = [];
+    this.processLoggingEnvs(['DEBUG_LOGGING', 'INFO_LOGGING', 'ERROR_LOGGING']);
+  }
+
+  public printStartupMessage() {
     const getLogString = (logging_types: string[]) => {
       let log_string = '';
       switch (logging_types.length) {
@@ -63,24 +39,50 @@ export class Logger {
       log_string += ' logging ' + (logging_types.length > 1 ? 'have' : 'has');
       return log_string;
     };
-    if (enabled.length > 0) {
-      console.log('\x1b[32m' + getLogString(enabled) + ' been explicitly enabled via the .env\x1b[0m');
+    if (this.enabled.length > 0) {
+      console.log('\x1b[32m' + getLogString(this.enabled) + ' been explicitly enabled via the .env\x1b[0m');
       console.log('');
     }
-    if (disabled.length > 0) {
-      console.log('\x1b[31m' + getLogString(disabled) + ' been explicitly disabled via the .env\x1b[0m');
+    if (this.disabled.length > 0) {
+      console.log('\x1b[31m' + getLogString(this.disabled) + ' been explicitly disabled via the .env\x1b[0m');
       console.log('');
     }
   }
 
   /**
-   * Initiate the Logger singleton & print a startup message
+   * Startup helper function to process .env variables for logging
+   * @param variable The name of the logging variable to process
    */
-  public static startup() {
-    this.processLoggingEnvs(['DEBUG_LOGGING', 'INFO_LOGGING', 'ERROR_LOGGING']);
+  private processLoggingEnvs(variables: string[]) {
+    for (const variable of variables) {
+      if ((this as any)[variable] === undefined) {
+        console.log('Logger does not have a variable called ' + variable);
+        process.exit(1);
+      }
+      const value = process.env[variable]?.toLocaleLowerCase();
+      if (value !== undefined) {
+        const logging_type = variable.split('_')[0];
+        if (value === 'false') {
+          (this as any)[variable] = false;
+          this.disabled.push(logging_type);
+        } else if (value === 'true') {
+          (this as any)[variable] = true;
+          this.enabled.push(logging_type);
+        } else {
+          console.log(
+            '\x1b[32mInvalid value for variable "' +
+              variable +
+              '" in the .env (expected true or false, found ' +
+              value +
+              ')',
+          );
+          process.exit(1);
+        }
+      }
+    }
   }
 
-  public static debug(...args: any[]) {
+  public debug(...args: any[]) {
     if (!this.DEBUG_LOGGING) {
       return;
     }
@@ -90,7 +92,7 @@ export class Logger {
     console.debug(...args);
   }
 
-  public static info(...args: any[]) {
+  public info(...args: any[]) {
     if (!this.INFO_LOGGING) {
       return;
     }
@@ -100,7 +102,7 @@ export class Logger {
     console.info(...args);
   }
 
-  public static error(...args: any[]) {
+  public error(...args: any[]) {
     if (!this.ERROR_LOGGING) {
       return;
     }
@@ -109,4 +111,25 @@ export class Logger {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.error(...args);
   }
+}
+
+const logger = new Logger();
+
+export function printStartupMessage() {
+  logger.printStartupMessage();
+}
+
+export function debug(...args: any[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  logger.debug(...args);
+}
+
+export function info(...args: any[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  logger.info(...args);
+}
+
+export function error(...args: any[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  logger.error(...args);
 }

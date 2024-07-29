@@ -1,4 +1,5 @@
-import { ServerChannelSettings, ServerSettings } from 'src/common/types';
+import { ServerChannelSettings, ServerSettings } from '../common/types';
+import { debug } from '../logger';
 
 // serverId -> ServerSettings
 const serverSettingsCache = new Map<string, ServerSettings>();
@@ -14,10 +15,12 @@ export function getCachedServerChannelSettings(serverId: string, channelId: stri
 }
 
 export function setCachedServerSettings(newServerSettings: ServerSettings) {
+  debug('[cache] setCachedServerSettings', JSON.stringify(newServerSettings, null, 2));
   serverSettingsCache.set(newServerSettings.getServerId(), newServerSettings);
 }
 
 export function setCachedServerChannelSettings(newServerChannelSettings: ServerChannelSettings) {
+  debug('[cache] setCachedServerChannelSettings', JSON.stringify(newServerChannelSettings, null, 2));
   serverChannelSettingsCache.set(
     `${newServerChannelSettings.getServerId()}/${newServerChannelSettings.getChannelId()}`,
     newServerChannelSettings,
@@ -25,6 +28,7 @@ export function setCachedServerChannelSettings(newServerChannelSettings: ServerC
 }
 
 export function clearCache(serverId: string) {
+  debug('[cache] clearCache', serverId);
   serverSettingsCache.delete(serverId);
   for (const key of serverChannelSettingsCache.keys()) {
     if (key.startsWith(serverId)) {

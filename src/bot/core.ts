@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getServerChannelSettings, getServerSettings } from '../database/api';
-import { Logger } from '../logger';
+import { debug } from '../logger';
 import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
@@ -12,15 +12,15 @@ let numTotalDeletedMessages: number = 0;
 export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
-    Logger.debug('Running retrieveAndDeleteMessages()...');
+    debug('Running retrieveAndDeleteMessages()...');
     numSingularDeletedMessages = 0;
     numBulkDeletedMessages = 0;
     numTotalDeletedMessages = 0;
     await retrieveAndDeleteMessages();
     if (numTotalDeletedMessages === 0) {
-      Logger.debug('No deletable messages were found. Waiting 30 seconds');
+      debug('No deletable messages were found. Waiting 30 seconds');
     } else {
-      Logger.debug(
+      debug(
         `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
         `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}). Waiting 30 seconds`,
       );

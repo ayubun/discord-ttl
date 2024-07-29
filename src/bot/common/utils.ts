@@ -42,6 +42,10 @@ export const isForeverTtl = (duration: number | string | undefined): boolean => 
  * If the string does not have any parsable durations, this function returns `undefined`.
  */
 export const getSecondsFromTimeString = (duration: string): number | undefined => {
+  duration = duration
+    .toLowerCase()
+    .replaceAll(/(and|,)/g, '')
+    .replaceAll(/\s/g, '');
   const secondsPerUnit = (unit: string): number | undefined => {
     switch (unit) {
       case 'seconds':
@@ -129,10 +133,10 @@ export const getServerSettingsDisplay = (
   header = '### __Current Settings__',
 ): string => {
   let display = header + '\n';
-  display +=
-    '- __Default TTL__: ' + getTtlDisplayString(settings.getDefaultMessageTtl(), settings.defaultMessageTtl) + '\n';
-  display += `  - __User Minimum__: ${getTtlDisplayString(settings.getMinMessageTtl(), settings.minMessageTtl)}\n`;
-  display += `  - __User Maximum__: ${getTtlDisplayString(settings.getMaxMessageTtl(), settings.maxMessageTtl)}\n`;
+  display += '- __TTL__: ' + getTtlDisplayString(settings.getDefaultMessageTtl(), settings.defaultMessageTtl) + '\n';
+  // TODO: uncomment when user TTLs are implemented~
+  // display += `  - __User Minimum__: ${getTtlDisplayString(settings.getMinMessageTtl(), settings.minMessageTtl)}\n`;
+  // display += `  - __User Maximum__: ${getTtlDisplayString(settings.getMaxMessageTtl(), settings.maxMessageTtl)}\n`;
   display += `- __Include Pins By Default__: ${getBooleanDisplayString(
     settings.getIncludePinsByDefault(),
     settings.includePinsByDefault,

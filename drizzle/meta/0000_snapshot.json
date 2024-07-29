@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "c3e15507-2682-48f4-afe8-f0f00856fc8c",
+  "id": "0fcff181-d36a-4e80-94fa-fcf751c936e1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "server_settings": {
@@ -52,7 +52,15 @@
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "server_settings_server_id_channel_id_pk": {
+          "columns": [
+            "channel_id",
+            "server_id"
+          ],
+          "name": "server_settings_server_id_channel_id_pk"
+        }
+      },
       "uniqueConstraints": {}
     }
   },

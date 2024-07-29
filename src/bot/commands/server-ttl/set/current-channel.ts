@@ -11,14 +11,13 @@ import {
 } from '../../../common/utils';
 
 const data = {
-  default_member_permissions: PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild,
+  default_member_permissions: String(PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild),
   description: 'Sets the default TTL settings for everyone in this channel',
   options: [
     {
       type: ApplicationCommandOptionType.String,
       name: 'default-time',
-      description:
-        'Default message TTL (e.g. `1h10m`, `30 min`, `1 week`). "forever" = No TTL. "reset" = Reset to default',
+      description: 'Default message TTL (e.g. `1h10m`, `1 week`). "forever" = No TTL. "reset" = Reset to default',
       required: true,
     },
     // {
@@ -59,7 +58,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
     minTimeString && !isForeverTtlString(minTimeString) ? getSecondsFromTimeString(minTimeString) : undefined;
 
   const currentSettings = await getServerChannelSettings(interaction.guildId!, interaction.channelId);
-  const newSettings = structuredClone(currentSettings);
+  const newSettings = currentSettings.clone();
 
   if (isResetString(defaultTimeString)) {
     newSettings.defaultMessageTtl = null;
@@ -102,11 +101,11 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
 
   const result = await new CookieConfirmationMenu(self, interaction)
     .setPromptMessage(
-      'Are you sure you want to update the TTL settings for this channel?\n\n' +
+      'Are you sure you want to update the TTL settings for this channel?\n' +
         getServerSettingsDiff(currentSettings, newSettings),
     )
     .setSuccessMessage(
-      'The TTL settings for this channel have been updated~\n\n' + getServerSettingsDiff(currentSettings, newSettings),
+      'The TTL settings for this channel have been updated~\n' + getServerSettingsDiff(currentSettings, newSettings),
     )
     .prompt();
 

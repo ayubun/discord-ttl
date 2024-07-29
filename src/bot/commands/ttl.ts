@@ -17,9 +17,9 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
         title: 'Current TTL Settings',
         description:
           getServerSettingsDisplay(serverSettings, '### __Server Settings__') +
-          '\n\n' +
+          '\n' +
           getServerSettingsDisplay(channelSettings, '### __Channel Settings__') +
-          '\n\n' +
+          '\n' +
           getServerSettingsDisplay(effectiveSettings, '### __Effective Settings__'),
       },
     ],

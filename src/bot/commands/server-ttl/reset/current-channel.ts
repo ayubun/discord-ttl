@@ -5,7 +5,7 @@ import { getServerSettingsDiff } from 'src/bot/common/utils';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 
 const data = {
-  default_member_permissions: PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild,
+  default_member_permissions: String(PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild),
   description: 'Reset the default message TTL settings for this channel',
   options: [],
 };
@@ -30,11 +30,11 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
 
   const result = await new CookieConfirmationMenu(self, interaction)
     .setPromptMessage(
-      'Are you sure you want to reset the TTL settings for this channel?\n\n' +
+      'Are you sure you want to reset the TTL settings for this channel?\n' +
         getServerSettingsDiff(currentSettings, defaultSettings),
     )
     .setSuccessMessage(
-      'The TTL settings for this channel have been reset to defaults~\n\n' +
+      'The TTL settings for this channel have been reset to defaults~\n' +
         getServerSettingsDiff(currentSettings, defaultSettings),
     )
     .prompt();

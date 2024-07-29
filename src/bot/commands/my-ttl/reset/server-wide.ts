@@ -6,8 +6,8 @@ const data = {
   options: [
     {
       type: ApplicationCommandOptionType.Boolean,
-      name: 'also-reset-channels',
-      description: 'Set to "True" to unset all TTL settings across all channels in the server. Defaults to "False"',
+      name: 'also-reset-all-channels',
+      description: 'Set to "True" to also unset ALL channel settings for this server.',
     },
   ],
 };

@@ -71,6 +71,7 @@ export class CookieClient extends Client {
 
     function mapCommandPathsToCookieCommandsRecursively(current_dir: string): Record<string, any> {
       const command_tree: Record<string, any> = {};
+      let errors = false;
       fs.readdirSync(current_dir).map(file_name => {
         const full_file_path = path.join(current_dir, file_name);
         if (fs.lstatSync(full_file_path).isDirectory()) {
@@ -80,8 +81,19 @@ export class CookieClient extends Client {
           return;
         }
         const cookie_command = CookieCommand.fromFile(full_file_path);
+        if (!cookie_command) {
+          // Since we want to print out all of the poorly formatted commands, we will continue for now
+          errors = true;
+          return;
+        }
         command_tree[cookie_command.getName()] = cookie_command;
       });
+      if (errors) {
+        CookieLogger.error(
+          'This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.',
+        );
+        process.exit(1);
+      }
       return command_tree;
     }
 
@@ -311,7 +323,7 @@ export class CookieCommand {
     }
   }
 
-  public static fromFile(filePath: string): CookieCommand {
+  public static fromFile(filePath: string): CookieCommand | undefined {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile = require(filePath);
@@ -345,10 +357,7 @@ export class CookieCommand {
       return new CookieCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
     } catch (err) {
       CookieLogger.error(`Could not create CookieCommand from file ${filePath}:`, String(err));
-      CookieLogger.error(
-        'This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.',
-      );
-      process.exit(1);
+      return undefined;
     }
   }
 
@@ -478,7 +487,6 @@ export class CookieConfirmationMenu {
           description: this.promptPrefix + (this.promptPrefix ? ' ' : '') + this.promptMessage,
         },
       ],
-      content: this.promptPrefix + (this.promptPrefix ? ' ' : '') + this.promptMessage,
       components: [row],
       ephemeral: true,
     });
@@ -622,7 +630,7 @@ class CookieLogger {
     if (!this.COOKIE_DEBUG_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[90mDEBUG\x1b[0m]\x1b[90m');
+    args.unshift('\x1b[0m[\x1b[34mcookie.ts\x1b[0m] [\x1b[90mDEBUG\x1b[0m]\x1b[90m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.debug(...args);
@@ -635,7 +643,7 @@ class CookieLogger {
     if (!this.COOKIE_INFO_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[32mINFO\x1b[0m]\x1b[37m');
+    args.unshift('\x1b[0m[\x1b[34mcookie.ts\x1b[0m] [\x1b[32mINFO\x1b[0m]\x1b[37m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.info(...args);
@@ -648,7 +656,7 @@ class CookieLogger {
     if (!this.COOKIE_ERROR_LOGGING) {
       return;
     }
-    args.unshift('[\x1b[34mcookie.ts\x1b[0m] [\x1b[31mERROR\x1b[0m]\x1b[93m');
+    args.unshift('\x1b[0m[\x1b[34mcookie.ts\x1b[0m] [\x1b[31mERROR\x1b[0m]\x1b[93m');
     args.push('\x1b[0m');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     console.error(...args);

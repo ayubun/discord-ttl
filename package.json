@@ -30,8 +30,8 @@
     "pretty-fix": "bun prettier -w './src/**/*.ts'",
     "pretty-fix-echo": "echo 'Running pretty-fix...'",
     "compile": "bun tsc",
-    "start": "bun compile && bun run dist/app.js",
-    "start-container": "docker compose --file dev-docker-compose.yaml up --build",
+    "start": "bun clean && bun compile && bun run dist/app.js",
+    "start-container": "bun clean && docker compose --file dev-docker-compose.yaml up --build",
     "watch": "bun --watch run src/app.ts"
   },
   "devDependencies": {

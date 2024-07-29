@@ -4,5 +4,6 @@ CREATE TABLE `server_settings` (
 	`default_message_ttl` integer,
 	`max_message_ttl` integer,
 	`min_message_ttl` integer,
-	`include_pins_by_default` integer
+	`include_pins_by_default` integer,
+	PRIMARY KEY(`channel_id`, `server_id`)
 );

@@ -7,7 +7,7 @@ export const DEFAULT_INCLUDE_PINS_BY_DEFAULT: boolean = false;
 
 export interface ServerSettingsData {
   serverId: string;
-  channelId?: string;
+  channelId?: string | null;
   defaultMessageTtl?: number | null;
   maxMessageTtl?: number | null;
   minMessageTtl?: number | null;
@@ -15,8 +15,6 @@ export interface ServerSettingsData {
 }
 
 export class ServerSettings {
-  public data: ServerSettingsData;
-
   public static fromServerSettingsData(data: ServerSettingsData): ServerSettings {
     return new ServerSettings(
       data.serverId,
@@ -33,15 +31,7 @@ export class ServerSettings {
     public maxMessageTtl?: number | null,
     public minMessageTtl?: number | null,
     public includePinsByDefault?: boolean | null,
-  ) {
-    this.data = {
-      serverId,
-      defaultMessageTtl,
-      maxMessageTtl,
-      minMessageTtl,
-      includePinsByDefault,
-    };
-  }
+  ) {}
 
   public getServerId(): string {
     return this.serverId;
@@ -78,6 +68,27 @@ export class ServerSettings {
   public getIncludePinsByDefault(): boolean {
     return this.includePinsByDefault ?? DEFAULT_INCLUDE_PINS_BY_DEFAULT;
   }
+
+  public getData(): ServerSettingsData {
+    return {
+      serverId: this.serverId,
+      channelId: null,
+      defaultMessageTtl: this.defaultMessageTtl,
+      maxMessageTtl: this.maxMessageTtl,
+      minMessageTtl: this.minMessageTtl,
+      includePinsByDefault: this.includePinsByDefault,
+    };
+  }
+
+  public clone(): ServerSettings {
+    return new ServerSettings(
+      this.serverId,
+      this.defaultMessageTtl,
+      this.maxMessageTtl,
+      this.minMessageTtl,
+      this.includePinsByDefault,
+    );
+  }
 }
 
 export class ServerChannelSettings extends ServerSettings {
@@ -101,15 +112,36 @@ export class ServerChannelSettings extends ServerSettings {
     public includePinsByDefault?: boolean | null,
   ) {
     super(serverId, defaultMessageTtl, maxMessageTtl, minMessageTtl, includePinsByDefault);
-    this.data.channelId = channelId;
   }
 
   public getChannelId(): string {
     return this.channelId;
   }
 
+  public getData(): ServerSettingsData {
+    return {
+      serverId: this.serverId,
+      channelId: this.channelId,
+      defaultMessageTtl: this.defaultMessageTtl,
+      maxMessageTtl: this.maxMessageTtl,
+      minMessageTtl: this.minMessageTtl,
+      includePinsByDefault: this.includePinsByDefault,
+    };
+  }
+
+  public clone(): ServerChannelSettings {
+    return new ServerChannelSettings(
+      this.serverId,
+      this.channelId,
+      this.defaultMessageTtl,
+      this.maxMessageTtl,
+      this.minMessageTtl,
+      this.includePinsByDefault,
+    );
+  }
+
   public applyServerSettings(serverSettings: ServerSettings): ServerChannelSettings {
-    new ServerChannelSettings(
+    return new ServerChannelSettings(
       this.serverId,
       this.channelId,
       this.defaultMessageTtl !== undefined ? this.defaultMessageTtl : serverSettings.defaultMessageTtl,
@@ -117,6 +149,5 @@ export class ServerChannelSettings extends ServerSettings {
       this.minMessageTtl !== undefined ? this.minMessageTtl : serverSettings.minMessageTtl,
       this.includePinsByDefault !== undefined ? this.includePinsByDefault : serverSettings.includePinsByDefault,
     );
-    return this;
   }
 }
