@@ -357,7 +357,8 @@ export class CookieCommand {
       CookieLogger.debug(`Created CookieCommand for command '/${full_command_name.join(' ')}'`);
       return new CookieCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
     } catch (err) {
-      CookieLogger.error(`Could not create CookieCommand from file ${filePath}:`, String(err));
+      // TODO: uncomment once user ttls are implemented !
+      // CookieLogger.error(`Could not create CookieCommand from file ${filePath}:`, String(err));
       return undefined;
     }
   }
