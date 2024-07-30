@@ -30,11 +30,11 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
 
   const result = await new CookieConfirmationMenu(self, interaction)
     .setPromptMessage(
-      'Are you sure you want to reset the TTL settings for this channel?\n' +
+      'Are you sure you want to reset the default TTL settings for this channel?\n' +
         getServerSettingsDiff(currentSettings, defaultSettings),
     )
     .setSuccessMessage(
-      'The TTL settings for this channel have been reset to defaults~\n' +
+      'The default TTL settings for this channel have been reset to defaults~\n' +
         getServerSettingsDiff(currentSettings, defaultSettings),
     )
     .prompt();

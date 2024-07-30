@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
 import { FOREVER_TTL } from 'src/common/types';
-import { getServerChannelSettings, setServerChannelSettings } from 'src/database/api';
+import { getServerSettings, setServerSettings } from 'src/database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {
@@ -12,7 +12,7 @@ import {
 
 const data = {
   default_member_permissions: String(PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild),
-  description: 'Sets the default TTL settings for everyone in this channel',
+  description: 'Sets the default TTL settings for everyone in this server',
   options: [
     {
       type: ApplicationCommandOptionType.String,
@@ -23,14 +23,14 @@ const data = {
     // {
     //   type: ApplicationCommandOptionType.String,
     //   name: 'max-time',
-    //   description: 'Max message TTL (e.g. `1h10m`, `30 min`, `1 week`). "forever" = No max. "reset" = Reset to default',
+    //   description: 'Max user TTL (e.g. `1h10m`, `30 min`, `1 week`). "forever" = No max. "reset" = Reset to default',
     //   required: false,
     // },
     // {
     //   type: ApplicationCommandOptionType.String,
     //   name: 'min-time',
     //   description:
-    //     'Min message TTL (e.g. `1h10m`, `30 min`, `1 week`). "forever" = TTL cannot be used. "reset" = Reset to default',
+    //     'Min user TTL (e.g. `1h10m`, `30 min`, `1 week`). "forever" = TTL cannot be used. "reset" = Reset to default',
     //   required: false,
     // },
     {
@@ -57,7 +57,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
   const minTtlSeconds =
     minTimeString && !isForeverTtlString(minTimeString) ? getSecondsFromTimeString(minTimeString) : undefined;
 
-  const currentSettings = await getServerChannelSettings(interaction.guildId!, interaction.channelId);
+  const currentSettings = await getServerSettings(interaction.guildId!);
   const newSettings = currentSettings.clone();
 
   if (isResetString(defaultTimeString)) {
@@ -92,7 +92,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
     return await interaction.reply({
       embeds: [
         {
-          description: 'This channel already matches the provided settings ^-^',
+          description: 'This server already matches the provided settings ^-^',
         },
       ],
       ephemeral: true,
@@ -101,17 +101,18 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
 
   const result = await new CookieConfirmationMenu(self, interaction)
     .setPromptMessage(
-      'Are you sure you want to update the TTL settings for this channel?\n' +
+      'Are you sure you want to update the default TTL settings for this server?\n' +
         getServerSettingsDiff(currentSettings, newSettings),
     )
     .setSuccessMessage(
-      'The TTL settings for this channel have been updated~\n' + getServerSettingsDiff(currentSettings, newSettings),
+      'The default TTL settings for this server have been updated~\n' +
+        getServerSettingsDiff(currentSettings, newSettings),
     )
     .prompt();
 
   if (result.isConfirmed()) {
     try {
-      await setServerChannelSettings(newSettings);
+      await setServerSettings(newSettings);
     } catch (error) {
       return await result.error(String(error));
     }

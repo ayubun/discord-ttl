@@ -89,10 +89,11 @@ export class CookieClient extends Client {
         command_tree[cookie_command.getName()] = cookie_command;
       });
       if (errors) {
-        CookieLogger.error(
-          'This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.',
-        );
-        process.exit(1);
+        // TODO: uncomment once user ttls are implemented !
+        // CookieLogger.error(
+        //   'This should not happen in production. Create an Issue on GitHub if you are seeing this during normal bot usage.',
+        // );
+        // process.exit(1);
       }
       return command_tree;
     }
@@ -412,9 +413,9 @@ export class CookieConfirmationMenu {
     this.interaction = interaction;
     this.response = undefined;
     this.result = { confirmed: false, cancelled: false, timedOut: false };
-    this.promptPrefix = '૮ . . ྀིა';
+    this.promptPrefix = '૮  . .  ྀིა';
     this.promptMessage = 'Are you sure you would like to proceed?';
-    this.successPrefix = '(⸝⸝⸝• ω •⸝⸝⸝) ♡';
+    this.successPrefix = '(⸝⸝• ω •⸝⸝) ♡';
     this.successMessage = `${command.getMention()} was confirmed.\n*It may take a moment for changes to take place.*`;
     this.cancelPrefix = '(￣^￣ゞ';
     this.cancelMessage = `${command.getMention()} was cancelled.\n*No changes were made.*`;
