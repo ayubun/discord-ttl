@@ -91,7 +91,7 @@ async function isMessageOlderThanTtl(
   const serverSettings = await getServerSettings(serverId);
   const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
   const ttl = effectiveSettings.getDefaultMessageTtl();
-  if (!ttl) {
+  if (ttl === undefined) {
     return false;
   }
   if (message.pinned && !effectiveSettings.getIncludePinsByDefault()) {
@@ -109,17 +109,23 @@ async function collectDeletableMessages(
   guildId: string,
   channelId: string,
   messages: Collection<string, Message<boolean>>,
-): Promise<Collection<string, Message<boolean>>> {
-  return Promise.resolve(
-    messages
-      .filter(
-        async (message: { createdAt: { getTime: () => number }; author: User; pinned: boolean }) =>
-          await isMessageOlderThanTtl(guildId, channelId, message),
-      )
-      .sort((a: { id: string }, b: { id: string }) => {
-        return a.id.localeCompare(b.id);
-      }),
-  );
+): Promise<Message<boolean>[]> {
+  // this sinful mess is why you don't use js/ts ( •̀ - •́ )
+  return (
+    await Promise.all(
+      messages
+        .sort((a: { id: string }, b: { id: string }) => {
+          return a.id.localeCompare(b.id);
+        })
+        .map(async message => ({
+          value: message,
+          include: await isMessageOlderThanTtl(guildId, channelId, message),
+        })),
+    )
+  )
+    .filter(v => v.include)
+    .map(data => data.value);
+  // source: https://stackoverflow.com/questions/71600782/async-inside-filter-function-in-javascript
 }
 
 /**
@@ -129,7 +135,7 @@ async function collectDeletableMessages(
 async function handleDeletesForNonBulkDeletableMessages(
   guildId: string,
   channelId: string,
-  messages: Collection<string, Message<boolean>>,
+  messages: Message<boolean>[],
 ): Promise<void[]> {
   return Promise.all(
     messages
@@ -151,12 +157,12 @@ async function handleDeletesForNonBulkDeletableMessages(
 async function handleDeletesForBulkDeletableMessages(
   guildId: string,
   channel: GuildTextBasedChannel,
-  messages: Collection<string, Message<boolean>>,
+  messages: Message<boolean>[],
 ): Promise<void | Collection<string, Message<boolean>>> {
   const messagesToDelete = messages.filter((message: { createdAt: { getTime: () => number } }) =>
     canMessageBeBulkDeleted(message),
   );
-  if (messagesToDelete.size === 0) {
+  if (messagesToDelete.length === 0) {
     return;
   }
   // https://discord.js.org/#/docs/main/stable/class/BaseGuildTextChannel?scrollTo=bulkDelete
