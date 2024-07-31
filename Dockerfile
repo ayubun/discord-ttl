@@ -4,7 +4,8 @@
 FROM oven/bun:alpine
 #
 WORKDIR /usr/app
-COPY bun.lockb package.json tsconfig.json drizzle /usr/app/
+COPY bun.lockb package.json tsconfig.json /usr/app/
+ADD drizzle /usr/app/drizzle
 ADD src /usr/app/src
 #
 RUN bun install 

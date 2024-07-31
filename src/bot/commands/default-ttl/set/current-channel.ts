@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { FOREVER_TTL } from 'src/common/types';
-import { getServerChannelSettings, setServerChannelSettings } from 'src/database/api';
+import { FOREVER_TTL } from '../../../../common/types';
+import { getServerChannelSettings, setServerChannelSettings } from '../../../../database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 import {
   getSecondsFromTimeString,

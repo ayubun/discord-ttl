@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { FOREVER_TTL } from 'src/common/types';
-import { getServerSettings, setServerSettings } from 'src/database/api';
+import { FOREVER_TTL } from '../../../../common/types';
+import { getServerSettings, setServerSettings } from '../../../../database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {

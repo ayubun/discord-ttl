@@ -1,4 +1,4 @@
-import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from 'src/common/types';
+import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from '../../common/types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const prettySeconds = require('pretty-seconds');
