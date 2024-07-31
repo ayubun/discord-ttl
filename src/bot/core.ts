@@ -27,8 +27,8 @@ export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
         `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}) (duration: ${durationInSec}s)`,
       );
     }
-    if (durationInSec < 30) {
-      await sleep(1000 * durationInSec); // Wait at least 30 seconds per retrieval loop
+    if (durationInSec < 10) {
+      await sleep(1000 * (10 - durationInSec)); // wait at least 10 seconds per retrieval loop (why not :3)
     }
   }
 }
