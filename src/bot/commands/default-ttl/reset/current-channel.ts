@@ -1,7 +1,7 @@
 import { PermissionFlagsBits, ChatInputCommandInteraction } from 'discord.js';
-import { getServerChannelSettings, setServerChannelSettings } from 'src/database/api';
-import { ServerChannelSettings } from 'src/common/types';
-import { getServerSettingsDiff } from 'src/bot/common/utils';
+import { getServerChannelSettings, setServerChannelSettings } from '../../../../database/api';
+import { ServerChannelSettings } from '../../../../common/types';
+import { getServerSettingsDiff } from '../../../common/utils';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 
 const data = {

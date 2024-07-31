@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { getServerChannelSettings, getServerSettings } from 'src/database/api';
+import { getServerChannelSettings, getServerSettings } from '../../database/api';
 import { CookieCommand } from '../cookie';
 import { getServerSettingsDisplay } from '../common/utils';
 
