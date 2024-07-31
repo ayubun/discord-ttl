@@ -19,6 +19,11 @@ module.exports = {
   plugins: [
       "@typescript-eslint",
   ],
+//   settings: {
+//     "import/resolver": {
+//         typescript: true,
+//     }
+//   },
   rules: {
       "@typescript-eslint/array-type": "error",
       "@typescript-eslint/ban-types": "off",
@@ -56,6 +61,8 @@ module.exports = {
       "eqeqeq": "error",
       "guard-for-in": "error",
       "import/order": "error",
+      // Handled by typescript
+      "import/no-unresolved": "off",
       "new-parens": "error",
       "no-caller": "error",
       "no-constant-condition": "off",
