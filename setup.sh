@@ -120,9 +120,6 @@ else
   echo "${RESET}${YELLOW_TEXT}(${ENV}) [${BOLD}Auto-Updater Setup${RESET}${YELLOW_TEXT}]${RESET}${BOLD}${GREEN_TEXT} Added update-ttl.sh to crontab${RESET}" 
 fi
 
-# Actually startup TTL
-docker compose up -d
-
 # Return to the directory we initially ran the script from
 cd $CURRENT_DIR
 
