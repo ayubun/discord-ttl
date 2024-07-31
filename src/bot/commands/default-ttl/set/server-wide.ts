@@ -6,7 +6,7 @@ import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 import {
   getSecondsFromTimeString,
   getServerSettingsDiff,
-  isForeverTtl as isForeverTtlString,
+  isForeverTtlString,
   isResetString,
 } from '../../../common/utils';
 

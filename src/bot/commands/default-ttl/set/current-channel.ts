@@ -2,11 +2,10 @@ import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFl
 import { FOREVER_TTL } from 'src/common/types';
 import { getServerChannelSettings, setServerChannelSettings } from 'src/database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {
   getSecondsFromTimeString,
   getServerSettingsDiff,
-  isForeverTtl as isForeverTtlString,
+  isForeverTtlString,
   isResetString,
 } from '../../../common/utils';
 

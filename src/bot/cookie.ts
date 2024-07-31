@@ -109,6 +109,9 @@ export class CookieClient extends Client {
     assert(this.token, 'Invariant: Missing valid token');
     assert(this.user?.id, 'Invariant: Missing valid client id');
 
+    /**
+     * @returns the minimum root permissions necessary to run the least restrictive subcommand
+     */
     const getMinimumNecessaryPermissions = (current_command_tree: Record<string, any>): bigint => {
       if (CookieCommand.isCookieCommand(current_command_tree)) {
         const cmd = current_command_tree;
@@ -134,6 +137,7 @@ export class CookieClient extends Client {
       parent_key: string,
       current_command_tree: Record<string, any>,
       current_depth: number = 0,
+      root_permissions: bigint = BigInt(0),
     ): Record<string, any> => {
       let new_json_data_tree: Record<string, any> = {
         // We will autofill the command layer
@@ -146,6 +150,7 @@ export class CookieClient extends Client {
         const perms = getMinimumNecessaryPermissions(current_command_tree);
         if (perms !== BigInt(0)) {
           new_json_data_tree['default_member_permissions'] = String(perms);
+          root_permissions = perms;
         }
       }
       if (CookieCommand.isCookieCommand(current_command_tree)) {
@@ -159,6 +164,7 @@ export class CookieClient extends Client {
             break;
         }
         new_json_data_tree = { ...new_json_data_tree, ...cmd.getJsonData() };
+        cmd.setRootPermissions(root_permissions);
         return new_json_data_tree;
       } else {
         switch (current_depth) {
@@ -172,7 +178,12 @@ export class CookieClient extends Client {
         new_json_data_tree['options'] = [];
         for (const key of Object.keys(current_command_tree)) {
           new_json_data_tree['options'].push(
-            buildJsonDataFromTree(key, current_command_tree[key] as Record<string, any>, current_depth + 1),
+            buildJsonDataFromTree(
+              key,
+              current_command_tree[key] as Record<string, any>,
+              current_depth + 1,
+              root_permissions,
+            ),
           );
         }
       }
@@ -307,12 +318,16 @@ export class CookieCommand {
   private onExecute: CallableFunction;
   private fullCommandName: string[];
   private id: string | undefined;
+  private permissions: bigint | undefined;
+  private root_permissions: bigint | undefined;
 
   public constructor(data: Record<string, any>, executeFunction: CallableFunction, fullCommandName: string[]) {
     this.data = data;
     this.onExecute = executeFunction;
     this.fullCommandName = fullCommandName;
     this.id = undefined;
+    this.permissions = undefined;
+    this.root_permissions = undefined;
   }
 
   public static isCookieCommand(command: any): command is CookieCommand {
@@ -394,6 +409,26 @@ export class CookieCommand {
     this.id = id;
   }
 
+  public setRootPermissions(permissions: bigint) {
+    this.root_permissions = permissions;
+  }
+
+  public getRequiredPermissions(): bigint {
+    if (this.permissions === undefined) {
+      const perms = this.data['default_member_permissions'];
+      if (perms === undefined || typeof perms !== 'string') {
+        this.permissions = BigInt(0);
+      } else {
+        this.permissions = BigInt(perms);
+      }
+    }
+    return this.permissions;
+  }
+
+  public getRequiredRootPermissions(): bigint {
+    return this.root_permissions || BigInt(0);
+  }
+
   public getMention(): string {
     if (this.id === undefined) {
       return '`/' + this.getFullCommandName() + '`';
@@ -414,7 +449,23 @@ export class CookieCommand {
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
-    await this.onExecute(this, interaction);
+    if (this.getRequiredPermissions() > 0 && this.getRequiredRootPermissions() !== this.getRequiredPermissions()) {
+      const permissions = interaction.memberPermissions?.bitfield;
+      if (permissions === undefined) {
+        return await interaction.reply({
+          content: 'I could not determine your permissions... :c Please try again',
+          ephemeral: true,
+        });
+      }
+      const hasPermissions = (this.getRequiredPermissions() & permissions) === this.getRequiredPermissions();
+      if (!hasPermissions) {
+        return await interaction.reply({
+          content: 'You do not have the necessary permissions to run this command :c',
+          ephemeral: true,
+        });
+      }
+    }
+    return await this.onExecute(this, interaction);
   }
 }
 

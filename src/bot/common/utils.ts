@@ -12,7 +12,7 @@ export const isResetString = (input: string | undefined): boolean => {
   return false;
 };
 
-export const isForeverTtl = (duration: number | string | undefined): boolean => {
+export const isForeverTtlString = (duration: number | string | undefined): boolean => {
   if (duration === undefined) {
     return false;
   }
