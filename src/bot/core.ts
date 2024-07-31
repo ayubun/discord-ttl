@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
-import { getMessageTtl } from '../database/api';
-import { Logger } from '../logger';
+import { getServerChannelSettings, getServerSettings } from '../database/api';
+import { debug, info } from '../logger';
 import { bot } from './api';
 
 const lastDeletedMessages: Record<string, string> = {};
@@ -12,20 +12,24 @@ let numTotalDeletedMessages: number = 0;
 export async function continuallyRetrieveAndDeleteMessages(): Promise<void> {
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   while (true) {
-    Logger.debug('Running retrieveAndDeleteMessages()...');
+    debug('[bot/core] Running retrieveAndDeleteMessages()...');
     numSingularDeletedMessages = 0;
     numBulkDeletedMessages = 0;
     numTotalDeletedMessages = 0;
+    const startTime = Date.now();
     await retrieveAndDeleteMessages();
+    const durationInSec = Math.round((Date.now() - startTime + Number.EPSILON) * 100) / 100000;
     if (numTotalDeletedMessages === 0) {
-      Logger.debug('No deletable messages were found. Waiting 30 seconds');
+      debug(`[bot/core] No deletable messages were found (duration: ${durationInSec}s)`);
     } else {
-      Logger.debug(
-        `Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
-        `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}). Waiting 30 seconds`,
+      info(
+        `[bot/core] Successfully deleted ${numTotalDeletedMessages} message${numTotalDeletedMessages !== 1 ? 's' : ''}`,
+        `(bulk: ${numBulkDeletedMessages}, singular: ${numSingularDeletedMessages}) (duration: ${durationInSec}s)`,
       );
     }
-    await sleep(1000 * 30); // Wait 30 seconds per retrieval loop
+    if (durationInSec < 30) {
+      await sleep(1000 * durationInSec); // Wait at least 30 seconds per retrieval loop
+    }
   }
 }
 
@@ -44,6 +48,7 @@ async function retrieveAndDeleteMessages(): Promise<void> {
       const guildId: string = channel.guildId;
       const messages: Collection<string, Message<boolean>> = await channel.messages.fetch({
         after: lastDeletedMessages[channel.id],
+        cache: false,
         limit: 100,
       });
       const deletableMessages = await collectDeletableMessages(guildId, channel.id, messages);
@@ -80,13 +85,19 @@ function canGetAndDeleteMessages(channel: GuildTextBasedChannel): boolean {
 async function isMessageOlderThanTtl(
   serverId: string,
   channelId: string,
-  message: { createdAt: { getTime: () => number }; author: User },
+  message: { createdAt: { getTime: () => number }; author: User; pinned: boolean },
 ): Promise<boolean> {
-  const messageTtl = await getMessageTtl(serverId, channelId, message.author.id);
-  if (!messageTtl) {
+  const channelSettings = await getServerChannelSettings(serverId, channelId);
+  const serverSettings = await getServerSettings(serverId);
+  const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
+  const ttl = effectiveSettings.getDefaultMessageTtl();
+  if (!ttl) {
     return false;
   }
-  return message.createdAt.getTime() < Date.now() - messageTtl * 1000;
+  if (message.pinned && !effectiveSettings.getIncludePinsByDefault()) {
+    return false;
+  }
+  return message.createdAt.getTime() < Date.now() - ttl * 1000;
 }
 
 function canMessageBeBulkDeleted(message: { createdAt: { getTime: () => number } }): boolean {
@@ -100,10 +111,14 @@ async function collectDeletableMessages(
   messages: Collection<string, Message<boolean>>,
 ): Promise<Collection<string, Message<boolean>>> {
   return Promise.resolve(
-    messages.filter(
-      async (message: { createdAt: { getTime: () => number }; author: User }) =>
-        await isMessageOlderThanTtl(guildId, channelId, message),
-    ),
+    messages
+      .filter(
+        async (message: { createdAt: { getTime: () => number }; author: User; pinned: boolean }) =>
+          await isMessageOlderThanTtl(guildId, channelId, message),
+      )
+      .sort((a: { id: string }, b: { id: string }) => {
+        return a.id.localeCompare(b.id);
+      }),
   );
 }
 
@@ -121,6 +136,7 @@ async function handleDeletesForNonBulkDeletableMessages(
       .filter((message: { createdAt: { getTime: () => number } }) => !canMessageBeBulkDeleted(message))
       .map(async (message: { delete: () => any; id: string }) => {
         await message.delete();
+        debug(`[bot/core] Deleted message ${guildId}/${channelId}/${message.id}`);
         numTotalDeletedMessages++;
         numSingularDeletedMessages++;
         lastDeletedMessages[channelId] = message.id;

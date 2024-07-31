@@ -40,4 +40,7 @@
     "./test/**/*",
     "./.eslintrc.js",
   ],
+  "exclude": [
+    "./drizzle.config.ts",
+  ],
 }
