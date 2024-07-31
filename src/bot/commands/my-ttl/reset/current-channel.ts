@@ -3,7 +3,6 @@
 
 // const data = {
 //   description: 'Reset your TTL settings for this channel',
-//   options: [],
 // };
 
 // const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInteraction) => {

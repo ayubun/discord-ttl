@@ -5,7 +5,7 @@ import { getServerSettingsDiff } from 'src/bot/common/utils';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 
 const data = {
-  default_member_permissions: String(PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild),
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
   description: 'Unset the default message TTL (time to live) for everyone in this server or channel',
   options: [
     {

@@ -1,9 +1,10 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
 import { getServerChannelSettings, getServerSettings } from 'src/database/api';
 import { CookieCommand } from '../cookie';
 import { getServerSettingsDisplay } from '../common/utils';
 
 const data = {
+  default_member_permissions: String(PermissionFlagsBits.SendMessages),
   description: 'Get the TTL settings for the current scope',
 };
 

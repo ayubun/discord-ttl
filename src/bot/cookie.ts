@@ -109,6 +109,27 @@ export class CookieClient extends Client {
     assert(this.token, 'Invariant: Missing valid token');
     assert(this.user?.id, 'Invariant: Missing valid client id');
 
+    const getMinimumNecessaryPermissions = (current_command_tree: Record<string, any>): bigint => {
+      if (CookieCommand.isCookieCommand(current_command_tree)) {
+        const cmd = current_command_tree;
+        const cmdPerms = cmd.getJsonData()['default_member_permissions'];
+        if (cmdPerms && typeof cmdPerms === 'string') {
+          return BigInt(cmdPerms);
+        }
+      } else {
+        const keys = Object.keys(current_command_tree);
+        if (!keys) {
+          return BigInt(0);
+        }
+        let perms = BigInt('0xffffffff');
+        for (const key of keys) {
+          perms &= getMinimumNecessaryPermissions(current_command_tree[key] as Record<string, any>);
+        }
+        return perms;
+      }
+      return BigInt(0);
+    };
+
     const buildJsonDataFromTree = (
       parent_key: string,
       current_command_tree: Record<string, any>,
@@ -121,6 +142,12 @@ export class CookieClient extends Client {
         // for subcommand groups / parent commands. This shouldn't be visible to users though
         description: 'bun',
       };
+      if (current_depth === 0) {
+        const perms = getMinimumNecessaryPermissions(current_command_tree);
+        if (perms !== BigInt(0)) {
+          new_json_data_tree['default_member_permissions'] = String(perms);
+        }
+      }
       if (CookieCommand.isCookieCommand(current_command_tree)) {
         const cmd = current_command_tree;
         switch (current_depth) {

@@ -11,7 +11,7 @@ import {
 } from '../../../common/utils';
 
 const data = {
-  default_member_permissions: String(PermissionFlagsBits.Administrator | PermissionFlagsBits.ManageGuild),
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
   description: 'Sets the default TTL settings for everyone in this channel',
   options: [
     {
