@@ -13,6 +13,7 @@
     "pretty-fix"
   ],
   "dependencies": {
+    "@sapphire/snowflake": "^3.5.3",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.5",
@@ -46,7 +47,7 @@
     "pre-commit": "^1.2.2",
     "prettier": "^2.8.8"
   },
-  "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time to live)",
+  "description": "(๑ > ᴗ < ๑)°ᡣ𐭩.°",
   "peerDependencies": {
     "typescript": "^5.0.0"
   }
