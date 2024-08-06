@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { ServerChannelSettings, ServerSettings } from '../common/types';
+import { ServerChannelSettings, ServerSettings } from '../common/settingsTypes';
 import { Lock } from '../common/lock';
 import {
   deleteAllServerSettings,

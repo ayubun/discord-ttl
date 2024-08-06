@@ -1,4 +1,4 @@
-import { ServerChannelSettings, ServerSettings } from '../common/types';
+import { ServerChannelSettings, ServerSettings } from '../common/settingsTypes';
 import { debug } from '../logger';
 
 // serverId -> ServerSettings

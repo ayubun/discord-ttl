@@ -1,10 +1,17 @@
 export const FOREVER_TTL: number = -1;
 // Friendly Defaults
+export const DEFAULT_MESSAGE_TTL: number | undefined = undefined; // Forever
 export const DEFAULT_MIN_MESSAGE_TTL: number | undefined = 30;
 export const DEFAULT_MAX_MESSAGE_TTL: number | undefined = undefined; // Forever
-export const DEFAULT_MESSAGE_TTL: number | undefined = undefined; // Forever
-export const DEFAULT_INCLUDE_PINS_BY_DEFAULT: boolean = false;
+export const DEFAULT_INCLUDE_PINS: boolean = false;
 
+// =-=-=------------------------=-=-=
+// .｡.:☆ server settings types ☆:.｡.
+// =-=-=------------------------=-=-=
+
+/**
+ * Data that is compatible with the `server_settings` database table
+ */
 export interface ServerSettingsData {
   serverId: string;
   channelId?: string | null;
@@ -30,14 +37,18 @@ export class ServerSettings {
     public defaultMessageTtl?: number | null,
     public maxMessageTtl?: number | null,
     public minMessageTtl?: number | null,
-    public includePinsByDefault?: boolean | null,
+    public includePins?: boolean | null,
   ) {}
 
   public getServerId(): string {
     return this.serverId;
   }
 
-  public getDefaultMessageTtl(): number | undefined {
+  /**
+   * @returns the message time-to-live, in seconds. `undefined` if messages should live forever.
+   * Defaults to {@link DEFAULT_MESSAGE_TTL}
+   */
+  public getMessageTtl(): number | undefined {
     if (this.defaultMessageTtl === FOREVER_TTL) {
       return undefined;
     } else if (this.defaultMessageTtl === null || this.defaultMessageTtl === undefined) {
@@ -46,6 +57,10 @@ export class ServerSettings {
     return this.defaultMessageTtl;
   }
 
+  /**
+   * @returns the max message time-to-live, in seconds. `undefined` if messages can live forever.
+   * Defaults to {@link DEFAULT_MAX_MESSAGE_TTL}
+   */
   public getMaxMessageTtl(): number | undefined {
     if (this.maxMessageTtl === FOREVER_TTL) {
       return undefined;
@@ -56,6 +71,10 @@ export class ServerSettings {
     return this.maxMessageTtl;
   }
 
+  /**
+   * @returns the min message time-to-live, in seconds. `undefined` if messages should live forever.
+   * Defaults to {@link DEFAULT_MIN_MESSAGE_TTL}
+   */
   public getMinMessageTtl(): number | undefined {
     if (this.minMessageTtl === FOREVER_TTL) {
       return undefined;
@@ -65,10 +84,17 @@ export class ServerSettings {
     return this.minMessageTtl;
   }
 
-  public getIncludePinsByDefault(): boolean {
-    return this.includePinsByDefault ?? DEFAULT_INCLUDE_PINS_BY_DEFAULT;
+  /**
+   * @returns `true` if pins should be included. `false` if they should be excluded.
+   * Defaults to {@link DEFAULT_INCLUDE_PINS}
+   */
+  public getIncludePins(): boolean {
+    return this.includePins ?? DEFAULT_INCLUDE_PINS;
   }
 
+  /**
+   * @returns a {@link ServerSettingsData} that can be stored in the `server_settings` db table
+   */
   public getData(): ServerSettingsData {
     return {
       serverId: this.serverId,
@@ -76,7 +102,7 @@ export class ServerSettings {
       defaultMessageTtl: this.defaultMessageTtl,
       maxMessageTtl: this.maxMessageTtl,
       minMessageTtl: this.minMessageTtl,
-      includePinsByDefault: this.includePinsByDefault,
+      includePinsByDefault: this.includePins,
     };
   }
 
@@ -86,7 +112,7 @@ export class ServerSettings {
       this.defaultMessageTtl,
       this.maxMessageTtl,
       this.minMessageTtl,
-      this.includePinsByDefault,
+      this.includePins,
     );
   }
 }
@@ -109,15 +135,18 @@ export class ServerChannelSettings extends ServerSettings {
     public defaultMessageTtl?: number | null,
     public maxMessageTtl?: number | null,
     public minMessageTtl?: number | null,
-    public includePinsByDefault?: boolean | null,
+    public includePins?: boolean | null,
   ) {
-    super(serverId, defaultMessageTtl, maxMessageTtl, minMessageTtl, includePinsByDefault);
+    super(serverId, defaultMessageTtl, maxMessageTtl, minMessageTtl, includePins);
   }
 
   public getChannelId(): string {
     return this.channelId;
   }
 
+  /**
+   * @returns a {@link ServerSettingsData} that can be stored in the `server_settings` db table
+   */
   public getData(): ServerSettingsData {
     return {
       serverId: this.serverId,
@@ -125,7 +154,7 @@ export class ServerChannelSettings extends ServerSettings {
       defaultMessageTtl: this.defaultMessageTtl,
       maxMessageTtl: this.maxMessageTtl,
       minMessageTtl: this.minMessageTtl,
-      includePinsByDefault: this.includePinsByDefault,
+      includePinsByDefault: this.includePins,
     };
   }
 
@@ -136,7 +165,7 @@ export class ServerChannelSettings extends ServerSettings {
       this.defaultMessageTtl,
       this.maxMessageTtl,
       this.minMessageTtl,
-      this.includePinsByDefault,
+      this.includePins,
     );
   }
 
@@ -147,7 +176,7 @@ export class ServerChannelSettings extends ServerSettings {
       this.defaultMessageTtl !== undefined ? this.defaultMessageTtl : serverSettings.defaultMessageTtl,
       this.maxMessageTtl !== undefined ? this.maxMessageTtl : serverSettings.maxMessageTtl,
       this.minMessageTtl !== undefined ? this.minMessageTtl : serverSettings.minMessageTtl,
-      this.includePinsByDefault !== undefined ? this.includePinsByDefault : serverSettings.includePinsByDefault,
+      this.includePins !== undefined ? this.includePins : serverSettings.includePins,
     );
   }
 }
