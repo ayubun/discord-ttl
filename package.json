@@ -13,12 +13,12 @@
     "pretty-fix"
   ],
   "dependencies": {
-    "discord.js": "^14.15.0",
-    "dotenv": "^16.0.3",
-    "drizzle-orm": "^0.29.3",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.29.5",
     "figlet": "^1.7.0",
     "pretty-seconds": "^3.0.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.5.4"
   },
   "scripts": {
     "clean": "rm -rf ./dist && find src -type d -name 'dist' -exec rm -r {} +",
@@ -37,14 +37,14 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/figlet": "^1.5.8",
-    "@types/node": "^18.15.11",
-    "@typescript-eslint/eslint-plugin": "^5.58.0",
-    "@typescript-eslint/parser": "^5.4.0",
-    "drizzle-kit": "^0.20.9",
-    "eslint": "^8.38.0",
-    "eslint-plugin-import": "^2.27.5",
+    "@types/node": "^18.19.43",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "drizzle-kit": "^0.20.18",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
     "pre-commit": "^1.2.2",
-    "prettier": "^2.8.7"
+    "prettier": "^2.8.8"
   },
   "description": "A simple-to-selfhost Discord bot which gives users the ability to have their server messages automatically deleted if they are older than a configurable TTL (time to live)",
   "peerDependencies": {
