@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { ServerSettings } from '../../../../common/types';
+import { ServerSettings } from '../../../../common/settingsTypes';
 import { getServerSettings, resetAllServerSettings, setServerSettings } from '../../../../database/api';
 import { getServerSettingsDiff } from '../../../common/utils';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
