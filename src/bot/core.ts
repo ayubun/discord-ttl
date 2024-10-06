@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getServerChannelSettings, getServerSettings } from '../database/api';
 import { debug, info } from '../logger';

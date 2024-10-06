@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFl
 import { FOREVER_TTL } from '../../../../common/settingsTypes';
 import { getServerSettings, setServerSettings } from '../../../../database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import {
   getSecondsFromTimeString,
   getServerSettingsDiff,

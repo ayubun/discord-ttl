@@ -1,6 +1,6 @@
 import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from '../../common/settingsTypes';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const prettySeconds = require('pretty-seconds');
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));

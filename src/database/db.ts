@@ -83,6 +83,8 @@ export async function insertMessages(messages: Message[]): Promise<void> {
   debug('[database] insertMessages', JSON.stringify(messages, null, 2));
   await db
     .insert(messageIds)
+    // TODO: properly handle when we try to insert a message that already exists
+    // this can happen if the bot restarts and tries to backfill messages that were frontfilled
     .values(messages.map(m => m.getData()))
     .execute();
 }
