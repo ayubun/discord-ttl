@@ -1,3 +1,4 @@
+import type { MessageIdsMetadataData } from 'src/common/messageTypes';
 import { ServerChannelSettings, ServerSettings } from '../common/settingsTypes';
 import { debug } from '../logger';
 
@@ -27,12 +28,27 @@ export function setCachedServerChannelSettings(newServerChannelSettings: ServerC
   );
 }
 
-export function clearCache(serverId: string) {
-  debug('[cache] clearCache', serverId);
+export function clearServerSettingsCache(serverId: string) {
+  debug('[cache] clearServerSettingsCache', serverId);
   serverSettingsCache.delete(serverId);
   for (const key of serverChannelSettingsCache.keys()) {
     if (key.startsWith(serverId)) {
       serverChannelSettingsCache.delete(key);
     }
   }
+}
+
+// serverId/channelId -> MessageIdsMetadataData
+const messageIdsMetadataCache = new Map<string, MessageIdsMetadataData>();
+
+export function getCachedMessageIdsMetadata(serverId: string, channelId: string): MessageIdsMetadataData | undefined {
+  return messageIdsMetadataCache.get(`${serverId}/${channelId}`);
+}
+
+export function setCachedMessageIdsMetadata(newMessageIdsMetadata: MessageIdsMetadataData) {
+  debug('[cache] setCachedMessageIdsMetadata', JSON.stringify(newMessageIdsMetadata, null, 2));
+  messageIdsMetadataCache.set(
+    `${newMessageIdsMetadata.serverId}/${newMessageIdsMetadata.channelId}`,
+    newMessageIdsMetadata,
+  );
 }

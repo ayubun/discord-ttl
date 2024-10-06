@@ -14,7 +14,7 @@ const BULK_DELETION_MAX_AGE_MILLIS: number = 1000 * (60 * 60 * 24 * 14 - 600);
 /**
  * Data that is compatible with the `message_ids` database table
  */
-export interface MessageData {
+export interface MessageIdsData {
   serverId: string;
   channelId: string;
   messageId: string;
@@ -36,7 +36,7 @@ export class Message {
     return msg;
   }
 
-  public static fromMessageData(data: MessageData): Message {
+  public static fromMessageData(data: MessageIdsData): Message {
     return new Message(data.serverId, data.channelId, data.messageId, data.authorId);
   }
 
@@ -153,9 +153,9 @@ export class Message {
   }
 
   /**
-   * @returns a {@link MessageData} that can be stored in the `message_ids` db table
+   * @returns a {@link MessageIdsData} that can be stored in the `message_ids` db table
    */
-  public getData(): MessageData {
+  public getData(): MessageIdsData {
     return {
       serverId: this.serverId,
       channelId: this.channelId,
@@ -163,4 +163,17 @@ export class Message {
       authorId: this.authorId,
     };
   }
+}
+
+// =-=-=-------------------------=-=-=
+// .｡.:☆ message metadata types ☆:.｡.
+// =-=-=-------------------------=-=-=
+
+/**
+ * Data that is compatible with the `message_ids_metadata` database table
+ */
+export interface MessageIdsMetadataData {
+  serverId: string;
+  channelId: string;
+  lastBackfilledMessageId: string;
 }

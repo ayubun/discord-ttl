@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "bba13341-dba8-4904-86bf-27bd2d0262fd",
+  "id": "7da563ce-f6b3-4221-84c2-57b2c5064d3f",
   "prevId": "3d26792a-2827-44ff-af15-6d3b78eba0e6",
   "tables": {
     "message_ids": {
@@ -72,13 +72,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "first_frontfilled_message_id": {
-          "name": "first_frontfilled_message_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         }
       },

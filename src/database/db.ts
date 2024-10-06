@@ -1,10 +1,11 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import Database from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
+import type { Message, MessageIdsMetadataData } from 'src/common/messageTypes';
 import { debug } from '../logger';
 import { ServerSettings, ServerChannelSettings, type ServerSettingsData } from '../common/settingsTypes';
-import { serverSettings } from './tables';
+import { messageIds, messageIdsMetadata, serverSettings } from './tables';
 
 const sqlite = new Database('data/discord-ttl.db');
 // docs: https://orm.drizzle.team/docs/get-started-sqlite#bun-sqlite
@@ -74,6 +75,45 @@ export async function deleteAllServerSettings(serverId: string): Promise<void> {
   await db.delete(serverSettings).where(eq(serverSettings.serverId, serverId)).execute();
 }
 
-// =-=-=---------------------=-=-=
-// .｡.:☆ message cache apis ☆:.｡.
-// =-=-=---------------------=-=-=
+// =-=-=---------------=-=-=
+// .｡.:☆ message apis ☆:.｡.
+// =-=-=---------------=-=-=
+
+export async function insertMessages(messages: Message[]): Promise<void> {
+  debug('[database] insertMessages', JSON.stringify(messages, null, 2));
+  await db
+    .insert(messageIds)
+    .values(messages.map(m => m.getData()))
+    .execute();
+}
+
+export async function selectMessageIdsMetadata(
+  serverId: string,
+  channelId: string,
+): Promise<MessageIdsMetadataData | undefined> {
+  debug('[database] selectMessageIdsMetadata', serverId, channelId);
+  const result = await db
+    .select()
+    .from(messageIdsMetadata)
+    .where(and(eq(messageIdsMetadata.serverId, serverId), eq(messageIdsMetadata.channelId, channelId)))
+    .execute();
+  if (result.length === 0) {
+    return undefined;
+  }
+  return result[0] as MessageIdsMetadataData;
+}
+
+export async function upsertMessageIdsMetadatas(newMessageIdsMetadatas: MessageIdsMetadataData[]): Promise<void> {
+  debug('[database] upsertMessageIdsMetadatas', JSON.stringify(newMessageIdsMetadatas, null, 2));
+  await db
+    .insert(messageIdsMetadata)
+    .values(newMessageIdsMetadatas)
+    .onConflictDoUpdate({
+      target: [messageIdsMetadata.serverId, messageIdsMetadata.channelId],
+      // https://orm.drizzle.team/learn/guides/upsert#postgresql-and-sqlite
+      set: {
+        lastBackfilledMessageId: sql.raw(`excluded.${messageIdsMetadata.lastBackfilledMessageId.name}`),
+      },
+    })
+    .execute();
+}

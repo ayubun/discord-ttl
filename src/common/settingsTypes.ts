@@ -10,7 +10,11 @@ export const DEFAULT_INCLUDE_PINS: boolean = false;
 // =-=-=------------------------=-=-=
 
 /**
- * Data that is compatible with the `server_settings` database table
+ * Data that is compatible with the `server_settings` database table.
+ *
+ * The reason that we allow both `undefined` and `null` is because `null` is used
+ * to represent expliticly setting a value to `null` (e.g. removing a set value),
+ * while `undefined` is used to do nothing and inheret the value from the parent.
  */
 export interface ServerSettingsData {
   serverId: string;

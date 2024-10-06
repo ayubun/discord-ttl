@@ -52,9 +52,6 @@ export const messageIdsMetadata = sqliteTable(
     // This is the most recent message ID that was "backfilled"
     // i.e. added via the message retrieval loop
     lastBackfilledMessageId: text('last_backfilled_message_id').notNull(),
-    // This message ID is the FIRST message ID that was "frontfilled"
-    // i.e. added via message creation events since bot startup
-    firstFrontfilledMessageId: text('first_frontfilled_message_id'),
   },
   table => {
     return {
