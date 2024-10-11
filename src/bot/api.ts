@@ -30,7 +30,7 @@ export function loginToDiscordAndStart() {
 
   bot.on('messageCreate', message => {
     if (message.guildId === null) {
-      // discord ttl does not support DMs
+      // discord ttl does not support DMs atm
       return;
     }
     debug(`[bot] Message create received for ${message.guildId}/${message.channelId}/${message.id}`);

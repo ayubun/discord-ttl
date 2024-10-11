@@ -7,6 +7,7 @@ import {
   deleteAllServerSettings,
   insertMessages,
   selectMessageIdsMetadata,
+  selectOldestMessages,
   selectServerChannelSettings,
   selectServerSettings,
   upsertMessageIdsMetadatas,
@@ -86,6 +87,17 @@ export async function resetAllServerSettings(serverId: string): Promise<void> {
 // .｡.:☆ message id apis ☆:.｡.
 
 const MESSAGE_IDS_DB_LOCK = new Lock();
+
+export async function getOldestMessages(
+  serverId: string,
+  channelId: string,
+  userId: string | undefined = undefined,
+  amount: number = 100,
+): Promise<Message[]> {
+  return await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    return await selectOldestMessages(serverId, channelId, userId, amount);
+  });
+}
 
 export async function backfillMessages(messages: Message[]): Promise<void> {
   await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
