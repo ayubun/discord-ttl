@@ -15,8 +15,8 @@ function getToken(): string {
 }
 
 export const bot = new CookieClient({
-  intents: ['Guilds'],
-  partials: [Partials.Channel, Partials.Message],
+  intents: ['Guilds', 'GuildMembers'],
+  partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
 });
 
 export function loginToDiscordAndStart() {
@@ -30,7 +30,7 @@ export function loginToDiscordAndStart() {
 
   bot.on('messageCreate', message => {
     if (message.guildId === null) {
-      // discord ttl does not support DMs
+      // discord ttl does not support DMs atm
       return;
     }
     debug(`[bot] Message create received for ${message.guildId}/${message.channelId}/${message.id}`);

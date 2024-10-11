@@ -6,8 +6,6 @@ import { text, integer, sqliteTable, primaryKey } from 'drizzle-orm/sqlite-core'
 // if you make changes to this file, you must run `bun drizzle-kit generate:sqlite`
 // to generate the proper database migrations~
 
-// user settings to be included in a future update !
-
 // server & server channel settings (´｡• ᵕ •｡`)
 export const serverSettings = sqliteTable(
   'server_settings',
@@ -22,6 +20,23 @@ export const serverSettings = sqliteTable(
   table => {
     return {
       pk: primaryKey({ columns: [table.serverId, table.channelId] }),
+    };
+  },
+);
+
+// user & user server & user server channel settings ^^
+export const userSettings = sqliteTable(
+  'user_settings',
+  {
+    userId: text('user_id').notNull(),
+    serverId: text('server_id'),
+    channelId: text('channel_id'),
+    defaultMessageTtl: integer('message_ttl'), // null represents no ttl
+    includePins: integer('include_pins', { mode: 'boolean' }),
+  },
+  table => {
+    return {
+      pk: primaryKey({ columns: [table.userId, table.serverId, table.channelId] }),
     };
   },
 );

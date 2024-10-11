@@ -1,16 +1,16 @@
 import assert from 'node:assert';
 import dotenv from 'dotenv';
 import type { Message, MessageIdsMetadataData } from 'src/common/messageTypes';
-import { ServerChannelSettings, ServerSettings } from '../common/settingsTypes';
+import { ServerChannelSettings, ServerSettings, UserSettings } from '../common/settingsTypes';
 import { Lock } from '../common/lock';
 import {
   deleteAllServerSettings,
   insertMessages,
   selectMessageIdsMetadata,
+  selectOldestMessages,
   selectServerChannelSettings,
   selectServerSettings,
   upsertMessageIdsMetadatas,
-  upsertServerChannelSettings,
   upsertServerSettings,
 } from './db';
 import {
@@ -71,7 +71,7 @@ export async function setServerSettings(newServerSettings: ServerSettings): Prom
 
 export async function setServerChannelSettings(newServerChannelSettings: ServerChannelSettings): Promise<void> {
   await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
-    await upsertServerChannelSettings(newServerChannelSettings);
+    await upsertServerSettings(newServerChannelSettings);
     setCachedServerChannelSettings(newServerChannelSettings);
   });
 }
@@ -83,9 +83,41 @@ export async function resetAllServerSettings(serverId: string): Promise<void> {
   });
 }
 
+// .｡.:☆ user settings apis ☆:.｡.
+
+const USER_SETTINGS_DB_LOCK = new Lock();
+
+export async function getAllUserSettings(): Promise<UserSettings[]> {
+  return await USER_SETTINGS_DB_LOCK.acquireWhile(async () => {
+    const cached = getAllUserSettings(serverId);
+    if (cached) {
+      return cached;
+    }
+    let result = await selectServerSettings(serverId);
+    if (result === undefined) {
+      result = new ServerSettings(serverId);
+      // no need to store default settings ╮ (. ❛ ᴗ ❛.) ╭
+      // await upsertServerSettings(result);
+    }
+    setCachedServerSettings(result);
+    return result;
+  });
+}
+
 // .｡.:☆ message id apis ☆:.｡.
 
 const MESSAGE_IDS_DB_LOCK = new Lock();
+
+export async function getOldestMessages(
+  serverId: string,
+  channelId: string,
+  userId: string | undefined = undefined,
+  amount: number = 100,
+): Promise<Message[]> {
+  return await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    return await selectOldestMessages(serverId, channelId, userId, amount);
+  });
+}
 
 export async function backfillMessages(messages: Message[]): Promise<void> {
   await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {

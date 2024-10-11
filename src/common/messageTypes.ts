@@ -163,6 +163,15 @@ export class Message {
       authorId: this.authorId,
     };
   }
+
+  public equals(obj: Message): boolean {
+    return (
+      this.authorId === obj.authorId &&
+      this.channelId === obj.channelId &&
+      this.messageId === obj.messageId &&
+      this.serverId === obj.serverId
+    );
+  }
 }
 
 // =-=-=-------------------------=-=-=
