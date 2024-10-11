@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { FOREVER_TTL } from '../../../../common/types';
+import { FOREVER_TTL } from '../../../../common/settingsTypes';
 import { getServerChannelSettings, setServerChannelSettings } from '../../../../database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
 import {
@@ -45,7 +45,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
   const defaultTimeString = interaction.options.getString('default-time', true).toLocaleLowerCase();
   const maxTimeString = interaction.options.getString('max-time', false)?.toLocaleLowerCase();
   const minTimeString = interaction.options.getString('min-time', false)?.toLocaleLowerCase();
-  const includePinsDefault = interaction.options.getBoolean('include-pins-by-default', false);
+  const includePins = interaction.options.getBoolean('include-pins', false);
 
   const defaultTtlSeconds =
     defaultTimeString && !isForeverTtlString(defaultTimeString)
@@ -83,8 +83,8 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
     newSettings.minMessageTtl = minTtlSeconds;
   }
 
-  if (includePinsDefault) {
-    newSettings.includePinsByDefault = includePinsDefault;
+  if (includePins) {
+    newSettings.includePins = includePins;
   }
 
   if (currentSettings === newSettings) {

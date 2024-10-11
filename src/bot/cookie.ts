@@ -368,7 +368,7 @@ export class CookieCommand {
 
   public static fromFile(filePath: string): CookieCommand | undefined {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const commandFile = require(filePath);
       assert('data' in commandFile, `Missing \`data\` export (expected type: json)`);
       assert('onExecute' in commandFile, `Missing \`onExecute\` export (expected type: async function)`);
@@ -398,6 +398,7 @@ export class CookieCommand {
       CookieCommand.assertCommandDataIsValid(jsonData as Record<string, any>);
       CookieLogger.debug(`Created CookieCommand for command '/${full_command_name.join(' ')}'`);
       return new CookieCommand(jsonData as Record<string, any>, onExecute as CallableFunction, full_command_name);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       // TODO: uncomment once user ttls are implemented !
       // CookieLogger.error(`Could not create CookieCommand from file ${filePath}:`, String(err));
@@ -487,7 +488,10 @@ export class CookieConfirmationMenu {
   private timeoutPrefix: string;
   private timeoutMessage: string;
 
-  public constructor(public command: CookieCommand, public interaction: ChatInputCommandInteraction) {
+  public constructor(
+    public command: CookieCommand,
+    public interaction: ChatInputCommandInteraction,
+  ) {
     this.command = command;
     this.interaction = interaction;
     this.response = undefined;
@@ -582,6 +586,7 @@ export class CookieConfirmationMenu {
       } else if (confirmation.customId === 'cancel') {
         this.result.cancelled = true;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       this.result.timedOut = true;
     }
