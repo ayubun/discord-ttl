@@ -1,27 +1,35 @@
+import assert from 'node:assert';
 import dotenv from 'dotenv';
-import { ServerChannelSettings, ServerSettings } from '../common/types';
+import type { Message, MessageIdsMetadataData } from 'src/common/messageTypes';
+import { ServerChannelSettings, ServerSettings, UserSettings } from '../common/settingsTypes';
 import { Lock } from '../common/lock';
 import {
   deleteAllServerSettings,
+  insertMessages,
+  selectMessageIdsMetadata,
+  selectOldestMessages,
   selectServerChannelSettings,
   selectServerSettings,
-  upsertServerChannelSettings,
+  upsertMessageIdsMetadatas,
   upsertServerSettings,
 } from './db';
 import {
-  clearCache,
+  clearServerSettingsCache,
+  getCachedMessageIdsMetadata,
   getCachedServerChannelSettings,
   getCachedServerSettings,
+  setCachedMessageIdsMetadata,
   setCachedServerChannelSettings,
   setCachedServerSettings,
 } from './cache';
 dotenv.config();
 
+// .｡.:☆ server settings apis ☆:.｡.
+
 const SERVER_SETTINGS_DB_LOCK = new Lock();
 
 export async function getServerSettings(serverId: string): Promise<ServerSettings> {
-  await SERVER_SETTINGS_DB_LOCK.acquire();
-  try {
+  return await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     const cached = getCachedServerSettings(serverId);
     if (cached) {
       return cached;
@@ -34,14 +42,11 @@ export async function getServerSettings(serverId: string): Promise<ServerSetting
     }
     setCachedServerSettings(result);
     return result;
-  } finally {
-    await SERVER_SETTINGS_DB_LOCK.release();
-  }
+  });
 }
 
 export async function getServerChannelSettings(serverId: string, channelId: string): Promise<ServerChannelSettings> {
-  await SERVER_SETTINGS_DB_LOCK.acquire();
-  try {
+  return await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     const cached = getCachedServerChannelSettings(serverId, channelId);
     if (cached) {
       return cached;
@@ -54,37 +59,104 @@ export async function getServerChannelSettings(serverId: string, channelId: stri
     }
     setCachedServerChannelSettings(result);
     return result;
-  } finally {
-    await SERVER_SETTINGS_DB_LOCK.release();
-  }
+  });
 }
 
 export async function setServerSettings(newServerSettings: ServerSettings): Promise<void> {
-  await SERVER_SETTINGS_DB_LOCK.acquire();
-  try {
+  await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     await upsertServerSettings(newServerSettings);
     setCachedServerSettings(newServerSettings);
-  } finally {
-    await SERVER_SETTINGS_DB_LOCK.release();
-  }
+  });
 }
 
 export async function setServerChannelSettings(newServerChannelSettings: ServerChannelSettings): Promise<void> {
-  await SERVER_SETTINGS_DB_LOCK.acquire();
-  try {
-    await upsertServerChannelSettings(newServerChannelSettings);
+  await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
+    await upsertServerSettings(newServerChannelSettings);
     setCachedServerChannelSettings(newServerChannelSettings);
-  } finally {
-    await SERVER_SETTINGS_DB_LOCK.release();
-  }
+  });
 }
 
 export async function resetAllServerSettings(serverId: string): Promise<void> {
-  await SERVER_SETTINGS_DB_LOCK.acquire();
-  try {
+  await SERVER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     await deleteAllServerSettings(serverId);
-    clearCache(serverId);
-  } finally {
-    await SERVER_SETTINGS_DB_LOCK.release();
-  }
+    clearServerSettingsCache(serverId);
+  });
+}
+
+// .｡.:☆ user settings apis ☆:.｡.
+
+const USER_SETTINGS_DB_LOCK = new Lock();
+
+export async function getAllUserSettings(): Promise<UserSettings[]> {
+  return await USER_SETTINGS_DB_LOCK.acquireWhile(async () => {
+    const cached = getAllUserSettings(serverId);
+    if (cached) {
+      return cached;
+    }
+    let result = await selectServerSettings(serverId);
+    if (result === undefined) {
+      result = new ServerSettings(serverId);
+      // no need to store default settings ╮ (. ❛ ᴗ ❛.) ╭
+      // await upsertServerSettings(result);
+    }
+    setCachedServerSettings(result);
+    return result;
+  });
+}
+
+// .｡.:☆ message id apis ☆:.｡.
+
+const MESSAGE_IDS_DB_LOCK = new Lock();
+
+export async function getOldestMessages(
+  serverId: string,
+  channelId: string,
+  userId: string | undefined = undefined,
+  amount: number = 100,
+): Promise<Message[]> {
+  return await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    return await selectOldestMessages(serverId, channelId, userId, amount);
+  });
+}
+
+export async function backfillMessages(messages: Message[]): Promise<void> {
+  await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    // Recompute new message ids metadatas
+    const updatedServerChannels = new Set<{ serverId: string; channelId: string }>();
+    for (const message of messages) {
+      let messageIdsMetadata = getCachedMessageIdsMetadata(message.getServerId(), message.getChannelId());
+      if (!messageIdsMetadata) {
+        // Try to load from DB if not in cache
+        messageIdsMetadata = await selectMessageIdsMetadata(message.getServerId(), message.getChannelId());
+      }
+      if (!messageIdsMetadata) {
+        messageIdsMetadata = {
+          serverId: message.getServerId(),
+          channelId: message.getChannelId(),
+          lastBackfilledMessageId: message.getMessageId(),
+        };
+        updatedServerChannels.add({ serverId: message.getServerId(), channelId: message.getChannelId() });
+      } else if (messageIdsMetadata.lastBackfilledMessageId < message.getMessageId()) {
+        messageIdsMetadata.lastBackfilledMessageId = message.getMessageId();
+        updatedServerChannels.add({ serverId: message.getServerId(), channelId: message.getChannelId() });
+      }
+      setCachedMessageIdsMetadata(messageIdsMetadata);
+    }
+    // Insert the messages
+    await insertMessages(messages);
+    // Update the metadatas
+    const updatedMetadatas: MessageIdsMetadataData[] = [];
+    for (const { serverId, channelId } of updatedServerChannels) {
+      const messageIdsMetadata = getCachedMessageIdsMetadata(serverId, channelId);
+      assert(messageIdsMetadata !== undefined);
+      updatedMetadatas.push(messageIdsMetadata);
+    }
+    await upsertMessageIdsMetadatas(updatedMetadatas);
+  });
+}
+
+export async function frontfillMessages(messages: Message[]): Promise<void> {
+  await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    await insertMessages(messages);
+  });
 }

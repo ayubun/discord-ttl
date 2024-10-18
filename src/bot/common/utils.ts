@@ -1,7 +1,9 @@
-import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from '../../common/types';
+import { FOREVER_TTL, type ServerChannelSettings, type ServerSettings } from '../../common/settingsTypes';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const prettySeconds = require('pretty-seconds');
+
+export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export const isResetString = (input: string | undefined): boolean => {
   switch (input) {
@@ -133,13 +135,13 @@ export const getServerSettingsDisplay = (
   header = '### __Current Settings__',
 ): string => {
   let display = header + '\n';
-  display += '- __TTL__: ' + getTtlDisplayString(settings.getDefaultMessageTtl(), settings.defaultMessageTtl) + '\n';
+  display += '- __TTL__: ' + getTtlDisplayString(settings.getMessageTtl(), settings.defaultMessageTtl) + '\n';
   // TODO: uncomment when user TTLs are implemented~
   // display += `  - __User Minimum__: ${getTtlDisplayString(settings.getMinMessageTtl(), settings.minMessageTtl)}\n`;
   // display += `  - __User Maximum__: ${getTtlDisplayString(settings.getMaxMessageTtl(), settings.maxMessageTtl)}\n`;
   display += `- __Include Pins By Default__: ${getBooleanDisplayString(
-    settings.getIncludePinsByDefault(),
-    settings.includePinsByDefault,
+    settings.getIncludePins(),
+    settings.includePins,
   )}\n`;
   return display;
 };
@@ -155,9 +157,9 @@ export const getServerSettingsDiff = (
   }
   if (oldSettings.defaultMessageTtl !== newSettings.defaultMessageTtl) {
     diff += `- __Default TTL__: ${getTtlDisplayString(
-      oldSettings.getDefaultMessageTtl(),
+      oldSettings.getMessageTtl(),
       oldSettings.defaultMessageTtl,
-    )} **→** ${getTtlDisplayString(newSettings.getDefaultMessageTtl(), newSettings.defaultMessageTtl)}\n`;
+    )} **→** ${getTtlDisplayString(newSettings.getMessageTtl(), newSettings.defaultMessageTtl)}\n`;
   }
   if (oldSettings.minMessageTtl !== newSettings.minMessageTtl) {
     diff += `- __User TTL Mininum__: ${getTtlDisplayString(
@@ -171,11 +173,11 @@ export const getServerSettingsDiff = (
       oldSettings.maxMessageTtl,
     )} **→** ${getTtlDisplayString(oldSettings.getMaxMessageTtl(), newSettings.maxMessageTtl)}\n`;
   }
-  if (oldSettings.includePinsByDefault !== newSettings.includePinsByDefault) {
+  if (oldSettings.includePins !== newSettings.includePins) {
     diff += `- __Include Pins By Default__: ${getBooleanDisplayString(
-      oldSettings.getIncludePinsByDefault(),
-      oldSettings.includePinsByDefault,
-    )} **→** ${getBooleanDisplayString(oldSettings.getIncludePinsByDefault(), newSettings.includePinsByDefault)}\n`;
+      oldSettings.getIncludePins(),
+      oldSettings.includePins,
+    )} **→** ${getBooleanDisplayString(oldSettings.getIncludePins(), newSettings.includePins)}\n`;
   }
   return diff;
 };

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Collection, type GuildTextBasedChannel, Message, PermissionFlagsBits, User } from 'discord.js';
 import { getServerChannelSettings, getServerSettings } from '../database/api';
 import { debug, info } from '../logger';
@@ -90,11 +89,11 @@ async function isMessageOlderThanTtl(
   const channelSettings = await getServerChannelSettings(serverId, channelId);
   const serverSettings = await getServerSettings(serverId);
   const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
-  const ttl = effectiveSettings.getDefaultMessageTtl();
+  const ttl = effectiveSettings.getMessageTtl();
   if (ttl === undefined) {
     return false;
   }
-  if (message.pinned && !effectiveSettings.getIncludePinsByDefault()) {
+  if (message.pinned && !effectiveSettings.getIncludePins()) {
     return false;
   }
   return message.createdAt.getTime() < Date.now() - ttl * 1000;

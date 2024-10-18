@@ -1,16 +1,21 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import Database from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { Message, type MessageIdsData, type MessageIdsMetadataData } from 'src/common/messageTypes';
 import { debug } from '../logger';
-import { ServerSettings, ServerChannelSettings, type ServerSettingsData } from '../common/types';
-import { serverSettings } from './tables';
+import { ServerSettings, ServerChannelSettings, type ServerSettingsData, UserSettings, type UserSettingsData, UserServerSettings, UserServerChannelSettings } from '../common/settingsTypes';
+import { messageIds, messageIdsMetadata, serverSettings, userSettings } from './tables';
 
 const sqlite = new Database('data/discord-ttl.db');
 // docs: https://orm.drizzle.team/docs/get-started-sqlite#bun-sqlite
 // https://orm.drizzle.team/learn/guides/conditional-filters-in-query
 const db = drizzle(sqlite);
 migrate(db, { migrationsFolder: 'drizzle' });
+
+// =-=-=-----------------------=-=-=
+// .｡.:☆ server settings apis ☆:.｡.
+// =-=-=-----------------------=-=-=
 
 export async function selectServerSettings(serverId: string): Promise<ServerSettings | undefined> {
   debug('[database] selectServerSettings', serverId);
@@ -22,7 +27,7 @@ export async function selectServerSettings(serverId: string): Promise<ServerSett
   if (result.length === 0) {
     return undefined;
   }
-  return ServerSettings.fromServerSettingsData(result[0] as ServerSettingsData);
+  return ServerSettings.from(result[0] as ServerSettingsData);
 }
 
 export async function selectServerChannelSettings(
@@ -38,10 +43,10 @@ export async function selectServerChannelSettings(
   if (result.length === 0) {
     return undefined;
   }
-  return ServerChannelSettings.fromServerSettingsData(result[0] as ServerSettingsData);
+  return ServerChannelSettings.from(result[0] as ServerSettingsData);
 }
 
-export async function upsertServerSettings(newServerSettings: ServerSettings): Promise<void> {
+export async function upsertServerSettings(newServerSettings: ServerSettings | ServerChannelSettings): Promise<void> {
   debug('[database] upsertServerSettings', JSON.stringify(newServerSettings, null, 2));
   await db
     .insert(serverSettings)
@@ -53,57 +58,125 @@ export async function upsertServerSettings(newServerSettings: ServerSettings): P
     .execute();
 }
 
-export async function upsertServerChannelSettings(newServerChannelSettings: ServerChannelSettings): Promise<void> {
-  debug('[database] upsertServerChannelSettings', JSON.stringify(newServerChannelSettings, null, 2));
-  await db
-    .insert(serverSettings)
-    .values(newServerChannelSettings.getData())
-    .onConflictDoUpdate({
-      target: [serverSettings.serverId, serverSettings.channelId],
-      set: newServerChannelSettings.getData(),
-    })
-    .execute();
-}
-
 export async function deleteAllServerSettings(serverId: string): Promise<void> {
   debug('[database] deleteAllServerSettings', serverId);
   await db.delete(serverSettings).where(eq(serverSettings.serverId, serverId)).execute();
 }
 
-/*
-Set your own channel-level ttl:
-/my-ttl set current-channel `time:none (or time)` `include-pins:true (defaults false)`
-Set your own server-level ttl:
-/my-ttl set server-wide `time:none (or time)` `include-pins:true (defaults false)`
-Reset your server or channel ttls to defaults:
-/my-ttl reset current-channel
-/my-ttl reset server-wide `reset-all-channels:true (defaults false)`
+// =-=-=---------------------=-=-=
+// .｡.:☆ user settings apis ☆:.｡.
+// =-=-=---------------------=-=-=
 
-Set channel-level configs:
-/server-ttl configure current-channel `max-time:none` `min-time:1h` `default-time:none` `include-pins-by-default:true`
-Set server-level configs:
-/server-ttl configure server-wide `max-time:12h` `min-time:1h` `default-time:6h` `include-pins-by-default:true`
-Reset server-level ttl settings to defaults:
-/server-ttl clear current-channel
-/server-ttl clear server-wide `clear-all-channels:true (defaults false)`
-*/
+export async function selectAllUserSettings(): Promise<UserSettings[]> {
+  debug('[database] selectAllUserSettings');
+  const result = await db
+    .select()
+    .from(userSettings)
+    .where(and(isNull(userSettings.serverId), isNull(userSettings.channelId)))
+    .execute();
+  const response = [];
+  for (const settings of result) {
+    response.push(UserSettings.from(settings as UserSettingsData));
+  }
+  return response;
+}
 
-// server + channel; pins + ttl + disableUserTtls here
-// if ttl is missing, default to server setting
-// if disableUserTtls is missing, default to false
-// server;
+export async function selectAllUserServerSettings(serverId: string): Promise<UserServerSettings[]> {
+  debug('[database] selectAllUserServerSettings');
+  const result = await db
+    .select()
+    .from(userSettings)
+    .where(and(eq(userSettings.serverId, serverId), isNull(userSettings.channelId)))
+    .execute();
+  const response = [];
+  for (const settings of result) {
+    response.push(UserServerSettings.from(settings as UserSettingsData));
+  }
+  return response;
+}
 
-// some ttl and some pins setting
+export async function selectAllUserServerChannelSettings(serverId: string, channelId: string): Promise<UserServerChannelSettings[]> {
+  debug('[database] selectAllUserServerChannelSettings');
+  const result = await db
+    .select()
+    .from(userSettings)
+    .where(and(eq(userSettings.serverId, serverId), eq(userSettings.channelId, channelId)))
+    .execute();
+  const response = [];
+  for (const settings of result) {
+    response.push(UserServerChannelSettings.from(settings as UserSettingsData));
+  }
+  return response;
+}
 
-// user + server + channel WHERE message_ttl < server_ttl
-// user + server WHERE message_ttl < server_ttl
+export async function upsertUserSettings(newUserSettings: UserSettings | UserServerSettings | UserServerChannelSettings): Promise<void> {
+  debug('[database] upsertUserSettings', JSON.stringify(newUserSettings, null, 2));
+  await db
+    .insert(userSettings)
+    .values(newUserSettings.getData())
+    .onConflictDoUpdate({
+      target: [userSettings.userId, userSettings.serverId, userSettings.channelId],
+      set: newUserSettings.getData(),
+    })
+    .execute();
+}
 
-/*
+// =-=-=---------------=-=-=
+// .｡.:☆ message apis ☆:.｡.
+// =-=-=---------------=-=-=
 
-/server-ttl set ttl:1h delete-pins:false
-/channel-ttl set ttl:1h delete-pins:true
-/my-ttl set ttl:1h
+export async function insertMessages(messages: Message[]): Promise<void> {
+  debug('[database] insertMessages', JSON.stringify(messages, null, 2));
+  await db
+    .insert(messageIds)
+    .values(messages.map(m => m.getData()))
+    .onConflictDoNothing()
+    .execute();
+}
 
-my ttl > channel ttl > server ttl
-channel disables > server disables
-*/
+export async function selectOldestMessages(
+  serverId: string,
+  channelId: string,
+  userId: string | undefined,
+  amount: number,
+): Promise<Message[]> {
+  debug('[database] selectMessages', serverId, channelId, userId);
+  let whereClause = and(eq(messageIds.serverId, serverId), eq(messageIds.channelId, channelId));
+  if (userId) {
+    whereClause = and(whereClause, eq(messageIds.authorId, userId));
+  }
+  return (
+    await db.select().from(messageIds).where(whereClause).orderBy(asc(messageIds.messageId)).limit(amount).execute()
+  ).map(row => Message.fromMessageData(row as MessageIdsData));
+}
+
+export async function selectMessageIdsMetadata(
+  serverId: string,
+  channelId: string,
+): Promise<MessageIdsMetadataData | undefined> {
+  debug('[database] selectMessageIdsMetadata', serverId, channelId);
+  const result = await db
+    .select()
+    .from(messageIdsMetadata)
+    .where(and(eq(messageIdsMetadata.serverId, serverId), eq(messageIdsMetadata.channelId, channelId)))
+    .execute();
+  if (result.length === 0) {
+    return undefined;
+  }
+  return result[0] as MessageIdsMetadataData;
+}
+
+export async function upsertMessageIdsMetadatas(newMessageIdsMetadatas: MessageIdsMetadataData[]): Promise<void> {
+  debug('[database] upsertMessageIdsMetadatas', JSON.stringify(newMessageIdsMetadatas, null, 2));
+  await db
+    .insert(messageIdsMetadata)
+    .values(newMessageIdsMetadatas)
+    .onConflictDoUpdate({
+      target: [messageIdsMetadata.serverId, messageIdsMetadata.channelId],
+      // https://orm.drizzle.team/learn/guides/upsert#postgresql-and-sqlite
+      set: {
+        lastBackfilledMessageId: sql.raw(`excluded.${messageIdsMetadata.lastBackfilledMessageId.name}`),
+      },
+    })
+    .execute();
+}
