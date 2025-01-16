@@ -26,7 +26,7 @@ export interface ServerSettingsData {
 }
 
 export class ServerSettings {
-  public static from(data: ServerSettingsData): ServerSettings {
+  public static from(this: void, data: ServerSettingsData): ServerSettings {
     return new ServerSettings(
       data.serverId,
       data.defaultMessageTtl,
@@ -122,7 +122,7 @@ export class ServerSettings {
 }
 
 export class ServerChannelSettings extends ServerSettings {
-  public static from(data: ServerSettingsData): ServerChannelSettings {
+  public static from(this: void, data: ServerSettingsData): ServerChannelSettings {
     return new ServerChannelSettings(
       data.serverId,
       data.channelId!,
@@ -205,7 +205,7 @@ export interface UserSettingsData {
 }
 
 export class UserSettings {
-  public static from(data: UserSettingsData): UserSettings {
+  public static from(this: void, data: UserSettingsData): UserSettings {
     return new UserSettings(data.userId, data.messageTtl, data.includePins);
   }
 
@@ -259,7 +259,7 @@ export class UserSettings {
 }
 
 export class UserServerSettings extends UserSettings {
-  public static from(data: UserSettingsData): UserServerSettings {
+  public static from(this: void, data: UserSettingsData): UserServerSettings {
     return new UserServerSettings(data.userId, data.serverId!, data.messageTtl, data.includePins);
   }
 
@@ -304,7 +304,7 @@ export class UserServerSettings extends UserSettings {
 }
 
 export class UserServerChannelSettings extends UserServerSettings {
-  public static from(data: UserSettingsData): UserServerChannelSettings {
+  public static from(this: void, data: UserSettingsData): UserServerChannelSettings {
     return new UserServerChannelSettings(
       data.userId,
       data.serverId!,
@@ -373,7 +373,8 @@ export class UserServerChannelSettings extends UserServerSettings {
 export class EffectiveServerChannelSettings {
   private effectiveTtl: number | undefined;
 
-  public from(
+  public static from(
+    this: void,
     serverSettings: ServerSettings,
     serverChannelSettings: ServerChannelSettings,
     userSettings: UserSettings,

@@ -14,7 +14,7 @@ export const serverSettings = sqliteTable(
     channelId: text('channel_id'),
     defaultMessageTtl: integer('default_message_ttl'), // null represents no ttl
     maxMessageTtl: integer('max_message_ttl'), // null represents no max ttl
-    minMessageTtl: integer('min_message_ttl'), // null represents no min ttl (30 seconds is hardcoded)
+    minMessageTtl: integer('min_message_ttl'), // null represents no min ttl (24h is default, 30sec is hardcoded)
     includePinsByDefault: integer('include_pins_by_default', { mode: 'boolean' }),
   },
   table => {

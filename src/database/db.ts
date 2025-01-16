@@ -121,6 +121,17 @@ export async function upsertUserSettings(newUserSettings: UserSettings | UserSer
     .execute();
 }
 
+export async function deleteAllUserSettings(userId: string): Promise<void> {
+  debug('[database] deleteAllUserSettings', userId);
+  await db.delete(userSettings).where(eq(userSettings.userId, userId)).execute();
+}
+
+export async function deleteAllUserServerSettingsByServerId(serverId: string): Promise<void> {
+  debug('[database] deleteAllUserServerSettingsByServerId', serverId);
+  await db.delete(userSettings).where(eq(userSettings.serverId, serverId)).execute();
+}
+
+
 // =-=-=---------------=-=-=
 // .｡.:☆ message apis ☆:.｡.
 // =-=-=---------------=-=-=

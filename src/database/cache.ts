@@ -32,7 +32,7 @@ export function getAllCachedUserServerSettings(serverId: string): UserServerSett
   );
 }
 
-export function getAllCachedUserServerChannelSettings(serverId: string, channelId: string): UserServerSettings[] {
+export function getAllCachedUserServerChannelSettings(serverId: string, channelId: string): UserServerChannelSettings[] {
   return Array.from(
     userServerChannelSettingsCache
       .entries()
@@ -103,22 +103,32 @@ export function clearServerSettingsCache(serverId: string) {
   debug('[cache] clearServerSettingsCache', serverId);
   serverSettingsCache.delete(serverId);
   for (const key of serverChannelSettingsCache.keys()) {
-    if (key.startsWith(serverId)) {
+    if (key.split('/')[0] === serverId) {
       serverChannelSettingsCache.delete(key);
     }
   }
+  // for (const key of userServerSettingsCache.keys()) {
+  //   if (key.split('/')[1] === serverId) {
+  //     userServerSettingsCache.delete(key);
+  //   }
+  // }
+  // for (const key of userServerChannelSettingsCache.keys()) {
+  //   if (key.split('/')[1] === serverId) {
+  //     userServerChannelSettingsCache.delete(key);
+  //   }
+  // }
 }
 
 export function clearUserSettingsCache(userId: string) {
   debug('[cache] clearUserSettingsCache', userId);
   userSettingsCache.delete(userId);
   for (const key of userServerSettingsCache.keys()) {
-    if (key.startsWith(userId)) {
+    if (key.split('/')[0] === userId) {
       userServerSettingsCache.delete(key);
     }
   }
   for (const key of userServerChannelSettingsCache.keys()) {
-    if (key.startsWith(userId)) {
+    if (key.split('/')[0] === userId) {
       userServerChannelSettingsCache.delete(key);
     }
   }

@@ -1,6 +1,6 @@
 import { Partials } from 'discord.js';
 import { debug, error, info } from '../logger';
-import { continuallyRetrieveAndDeleteMessages as continuallyRetrieveMessages } from './core';
+import { continuallyBackfillMessageIds } from './backfiller';
 import { CookieClient } from './cookie';
 
 function getToken(): string {
@@ -21,9 +21,9 @@ export const bot = new CookieClient({
 
 export function loginToDiscordAndStart() {
   bot.once('ready', () => {
-    info('[bot] Logged in to Discord and now continually retrieving messages for deletion');
-    continuallyRetrieveMessages().catch((err: any) => {
-      error('[bot] Encountered a fatal error in the message retrieval loop:', err);
+    info('[bot] Logged in to Discord and now continually retrieving message ids');
+    continuallyBackfillMessageIds().catch((err: any) => {
+      error('[bot] Encountered a fatal error in the message id retrieval loop:', err);
       process.exit(1);
     });
   });

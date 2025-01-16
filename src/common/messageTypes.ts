@@ -1,8 +1,9 @@
 import { DiscordSnowflake } from '@sapphire/snowflake';
 import { PermissionFlagsBits, Routes, Message as DiscordJsMessage } from 'discord.js';
 import { bot } from '../bot/api';
-import { getServerChannelSettings, getServerSettings } from '../database/api';
+import { getServerChannelSettings, getServerSettings, getUserSettings, getUserServerSettings, getUserServerChannelSettings } from '../database/api';
 import { error } from '../logger';
+import { EffectiveServerChannelSettings } from './settingsTypes';
 
 // 14 days (discord's bulk deletion age threshold) (-600 sec for time to delete buffer)
 const BULK_DELETION_MAX_AGE_MILLIS: number = 1000 * (60 * 60 * 24 * 14 - 600);
@@ -25,7 +26,7 @@ export class Message {
   private createdAt: Date;
   private pinned: boolean;
 
-  public static fromDiscordJsMessage(message: DiscordJsMessage): Message {
+  public static fromDiscordJsMessage(this: void, message: DiscordJsMessage): Message {
     if (!message.guildId) {
       throw new Error('Cannot create a Message object from a DM');
     }
@@ -82,10 +83,14 @@ export class Message {
   /**
    * @returns `true` if the message is older than the effective time to live
    */
-  public async isTimeToDie(): Promise<boolean> {
-    const channelSettings = await getServerChannelSettings(this.serverId, this.channelId);
-    const serverSettings = await getServerSettings(this.serverId);
-    const effectiveSettings = channelSettings.applyServerSettings(serverSettings);
+  public async isTimeToDelete(): Promise<boolean> {
+    const effectiveSettings = EffectiveServerChannelSettings.from(
+      await getServerSettings(this.serverId),
+      await getServerChannelSettings(this.serverId, this.channelId),
+      await getUserSettings(this.authorId),
+      await getUserServerSettings(this.authorId, this.serverId),
+      await getUserServerChannelSettings(this.authorId, this.serverId, this.channelId),
+    );
 
     const ttl = effectiveSettings.getMessageTtl();
 
