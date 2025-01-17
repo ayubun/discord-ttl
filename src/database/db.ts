@@ -3,7 +3,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import Database from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Message, type MessageIdsData, type MessageIdsMetadataData } from 'src/common/messageTypes';
-import { debug } from '../logger';
+import { debug, error } from '../logger';
 import { ServerSettings, ServerChannelSettings, type ServerSettingsData, UserSettings, type UserSettingsData, UserServerSettings, UserServerChannelSettings } from '../common/settingsTypes';
 import { messageIds, messageIdsMetadata, serverSettings, userSettings } from './tables';
 
@@ -137,6 +137,10 @@ export async function deleteAllUserServerSettingsByServerId(serverId: string): P
 // =-=-=---------------=-=-=
 
 export async function insertMessages(messages: Message[]): Promise<void> {
+  if (messages.length === 0) {
+    error('[database] insertMessages: no messages to insert');
+    return;
+  }
   debug('[database] insertMessages', JSON.stringify(messages, null, 2));
   await db
     .insert(messageIds)
@@ -178,6 +182,10 @@ export async function selectMessageIdsMetadata(
 }
 
 export async function upsertMessageIdsMetadatas(newMessageIdsMetadatas: MessageIdsMetadataData[]): Promise<void> {
+  if (newMessageIdsMetadatas.length === 0) {
+    error('[database] upsertMessageIdsMetadatas: no message ids metadatas to upsert');
+    return;
+  }
   debug('[database] upsertMessageIdsMetadatas', JSON.stringify(newMessageIdsMetadatas, null, 2));
   await db
     .insert(messageIdsMetadata)

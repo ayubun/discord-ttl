@@ -1,7 +1,9 @@
+import { DiscordSnowflake } from '@sapphire/snowflake';
 import { Partials } from 'discord.js';
 import { debug, error, info } from '../logger';
 import { continuallyBackfillMessageIds } from './backfiller';
 import { CookieClient } from './cookie';
+import { frontfillMessages } from 'src/database/api';
 
 function getToken(): string {
   const token = process.env['DISCORD_BOT_TOKEN'];
@@ -14,6 +16,24 @@ function getToken(): string {
   return token;
 }
 
+// we track the bot startup time as a snowflake so that we can easily compare it to other snowflakes
+let BOT_STARTUP_SNOWFLAKE: bigint = BigInt(-1);
+
+/**
+ * @param snowflake - a snowflake to compare to the bot startup time
+ * @returns true if the snowflake is after the bot startup time, false otherwise
+ */
+export function isAfterBotStartup(snowflake: string | bigint): boolean {
+  if (BOT_STARTUP_SNOWFLAKE === BigInt(-1)) {
+    debug('[bot] isAfterBotStartup(): Startup time not yet set, returning false');
+    return false;
+  }
+  if (typeof snowflake === 'string') {
+    snowflake = BigInt(snowflake);
+  }
+  return snowflake >= BOT_STARTUP_SNOWFLAKE;
+}
+
 export const bot = new CookieClient({
   intents: ['Guilds', 'GuildMembers'],
   partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
@@ -22,6 +42,10 @@ export const bot = new CookieClient({
 export function loginToDiscordAndStart() {
   bot.once('ready', () => {
     info('[bot] Logged in to Discord and now continually retrieving message ids');
+    if (BOT_STARTUP_SNOWFLAKE === BigInt(-1)) {
+      BOT_STARTUP_SNOWFLAKE = DiscordSnowflake.generate({ timestamp: Date.now() });
+      info('[bot] Startup time set to now (snowflake: ' + BOT_STARTUP_SNOWFLAKE + ')');
+    }
     continuallyBackfillMessageIds().catch((err: any) => {
       error('[bot] Encountered a fatal error in the message id retrieval loop:', err);
       process.exit(1);
@@ -34,10 +58,11 @@ export function loginToDiscordAndStart() {
       return;
     }
     debug(`[bot] Message create received for ${message.guildId}/${message.channelId}/${message.id}`);
+    frontfillMessages(Message.fromDiscordJsMessage(message));
   });
 
   bot.login(getToken()).catch((err: any) => {
-    error('Encountered a fatal error while logging in:', err);
+    error('[bot] Encountered a fatal error while logging in:', err);
     process.exit(1);
   });
 }

@@ -1,16 +1,13 @@
 // the backfiller handles collection of message ids from discord and storing them in the database.
 // this is important so that discord ttl can query for user-specific ttls. it also saves on api calls.
 
-import { DiscordSnowflake } from '@sapphire/snowflake';
 import { debug, error, info } from "src/logger";
 import { PermissionFlagsBits, type GuildTextBasedChannel } from "discord.js";
 import { backfillMessages, getMessageIdsMetadata } from "src/database/api";
 import { Message } from "src/common/messageTypes";
-import { bot } from "./api";
+import { bot, isAfterBotStartup } from "./api";
 
 let numBackfilledMessages = 0;
-
-const BOT_STARTUP_SNOWFLAKE: bigint = DiscordSnowflake.generate({ timestamp: new Date(Date.now() + 10*60000) });
 
 export async function backfillMessageIds(): Promise<void> {
   debug('[bot/backfiller] Running backfillMessageIds()...');
@@ -43,7 +40,7 @@ async function retrieveAndBackfillMessageIds(): Promise<void> {
 
     try {
       const messageIdsMetadata = await getMessageIdsMetadata(serverId, channelId);
-      if (BigInt(messageIdsMetadata.lastBackfilledMessageId) >= BOT_STARTUP_SNOWFLAKE) {
+      if (isAfterBotStartup(messageIdsMetadata.lastBackfilledMessageId)) {
         continue;
       }
       const messages: Message[] = (await channel.messages.fetch({

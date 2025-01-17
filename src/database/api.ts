@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import type { Message, MessageIdsMetadataData } from 'src/common/messageTypes';
+import { isAfterBotStartup } from 'src/bot/api';
 import { ServerChannelSettings, ServerSettings, UserServerChannelSettings, UserServerSettings, UserSettings } from '../common/settingsTypes';
 import { Lock } from '../common/lock';
 import {
   deleteAllServerSettings,
-  deleteAllUserServerSettings,
   insertMessages,
   selectAllUserServerChannelSettings,
   selectAllUserServerSettings,
@@ -248,7 +248,7 @@ export async function backfillMessages(messages: Message[]): Promise<void> {
     const updatedMetadatas: MessageIdsMetadataData[] = [];
     for (const message of messages) {
       const messageIdsMetadata = await getMessageIdsMetadata(message.getServerId(), message.getChannelId());
-      if (messageIdsMetadata.lastBackfilledMessageId < message.getMessageId()) {
+      if (BigInt(messageIdsMetadata.lastBackfilledMessageId) < BigInt(message.getMessageId())) {
         messageIdsMetadata.lastBackfilledMessageId = message.getMessageId();
         updatedMetadatas.push(messageIdsMetadata);
         setCachedMessageIdsMetadata(messageIdsMetadata);
@@ -263,6 +263,22 @@ export async function backfillMessages(messages: Message[]): Promise<void> {
 
 export async function frontfillMessages(messages: Message[]): Promise<void> {
   await MESSAGE_IDS_DB_LOCK.acquireWhile(async () => {
+    // recompute new message ids metadatas if the backfiller has finished
+    const updatedMetadatas: MessageIdsMetadataData[] = [];
+    for (const message of messages) {
+      const messageIdsMetadata = await getMessageIdsMetadata(message.getServerId(), message.getChannelId());
+      if (isAfterBotStartup(messageIdsMetadata.lastBackfilledMessageId)) {
+        messageIdsMetadata.lastBackfilledMessageId = message.getMessageId();
+        updatedMetadatas.push(messageIdsMetadata);
+        setCachedMessageIdsMetadata(messageIdsMetadata);
+      }
+    }
+    // insert the messages
     await insertMessages(messages);
+    // update the metadatas, if any. frontfilling does not update metadatas UNLESS
+    // the backfiller has caught up to the bot starting time
+    if (updatedMetadatas.length > 0) {
+      await upsertMessageIdsMetadatas(updatedMetadatas);
+    }
   });
 }
