@@ -9,7 +9,18 @@ import { bot, isAfterBotStartup } from "./api";
 
 let numBackfilledMessages = 0;
 
-export async function backfillMessageIds(): Promise<void> {
+export function continuallyBackfillMessageIds(): void {
+  setTimeout(() => {
+    backfillMessageIds()
+      .then(() => continuallyBackfillMessageIds())
+      .catch((err: any) => {
+        error('[bot/backfiller] Encountered a fatal error in the message id backfiller:', err);
+        process.exit(1);
+      });
+  }, 5000);
+}
+
+async function backfillMessageIds(): Promise<void> {
   debug('[bot/backfiller] Running backfillMessageIds()...');
   numBackfilledMessages = 0;
   const startTime = Date.now();
