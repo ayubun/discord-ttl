@@ -1,7 +1,13 @@
 import { DiscordSnowflake } from '@sapphire/snowflake';
 import { PermissionFlagsBits, Routes, Message as DiscordJsMessage } from 'discord.js';
 import { bot } from '../bot/api';
-import { getServerChannelSettings, getServerSettings, getUserSettings, getUserServerSettings, getUserServerChannelSettings } from '../database/api';
+import {
+  getServerChannelSettings,
+  getServerSettings,
+  getUserSettings,
+  getUserServerSettings,
+  getUserServerChannelSettings,
+} from '../database/api';
 import { error } from '../logger';
 import { EffectiveServerChannelSettings } from './settingsTypes';
 

@@ -32,7 +32,10 @@ export function getAllCachedUserServerSettings(serverId: string): UserServerSett
   );
 }
 
-export function getAllCachedUserServerChannelSettings(serverId: string, channelId: string): UserServerChannelSettings[] {
+export function getAllCachedUserServerChannelSettings(
+  serverId: string,
+  channelId: string,
+): UserServerChannelSettings[] {
   return Array.from(
     userServerChannelSettingsCache
       .entries()

@@ -1,10 +1,10 @@
-import { debug, error, info } from "src/logger";
+import { debug, error, info } from 'src/logger';
 
 let numDeletedMessages = 0;
 
 export function continuallyDeleteReadyMessages(): void {
   setTimeout(() => {
-      deleteReadyMessages()
+    deleteReadyMessages()
       .then(() => continuallyDeleteReadyMessages())
       .catch((err: any) => {
         error('[bot/deleter] Encountered a fatal error in the message deleter:', err);
@@ -23,9 +23,7 @@ async function deleteReadyMessages(): Promise<void> {
     debug(`[bot/deleter] No deletable messages were found (duration: ${durationInSec}s)`);
   } else {
     info(
-      `[bot/deleter] Successfully deleted ${numDeletedMessages} message${
-        numDeletedMessages !== 1 ? 's' : ''
-      }`,
+      `[bot/deleter] Successfully deleted ${numDeletedMessages} message${numDeletedMessages !== 1 ? 's' : ''}`,
       `(duration: ${durationInSec}s)`,
     );
   }

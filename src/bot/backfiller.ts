@@ -1,11 +1,11 @@
 // the backfiller handles collection of message ids from discord and storing them in the database.
 // this is important so that discord ttl can query for user-specific ttls. it also saves on api calls.
 
-import { debug, error, info } from "src/logger";
-import { PermissionFlagsBits, type GuildTextBasedChannel } from "discord.js";
-import { backfillMessages, getMessageIdsMetadata } from "src/database/api";
-import { Message } from "src/common/messageTypes";
-import { bot, isAfterBotStartup } from "./api";
+import { debug, error, info } from 'src/logger';
+import { PermissionFlagsBits, type GuildTextBasedChannel } from 'discord.js';
+import { backfillMessages, getMessageIdsMetadata } from 'src/database/api';
+import { Message } from 'src/common/messageTypes';
+import { bot, isAfterBotStartup } from './api';
 
 let numBackfilledMessages = 0;
 
@@ -54,11 +54,13 @@ async function retrieveAndBackfillMessageIds(): Promise<void> {
       if (isAfterBotStartup(messageIdsMetadata.lastBackfilledMessageId)) {
         continue;
       }
-      const messages: Message[] = (await channel.messages.fetch({
-        after: messageIdsMetadata.lastBackfilledMessageId,
-        cache: false,
-        limit: 100,
-      })).map(Message.fromDiscordJsMessage);
+      const messages: Message[] = (
+        await channel.messages.fetch({
+          after: messageIdsMetadata.lastBackfilledMessageId,
+          cache: false,
+          limit: 100,
+        })
+      ).map(Message.fromDiscordJsMessage);
       await backfillMessages(messages);
       numBackfilledMessages += messages.length;
     } catch (err) {
@@ -73,10 +75,7 @@ function canGetMessages(channel: GuildTextBasedChannel): boolean {
     return false;
   }
   const currentPerms = me.permissionsIn(channel);
-  if (
-    !currentPerms.has(PermissionFlagsBits.ViewChannel) ||
-    !currentPerms.has(PermissionFlagsBits.ReadMessageHistory)
-  ) {
+  if (!currentPerms.has(PermissionFlagsBits.ViewChannel) || !currentPerms.has(PermissionFlagsBits.ReadMessageHistory)) {
     return false;
   }
   // Text-in-voice channels require Connect permissions, too (apparently)

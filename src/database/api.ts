@@ -1,7 +1,13 @@
 import dotenv from 'dotenv';
 import type { Message, MessageIdsMetadataData } from 'src/common/messageTypes';
 import { isAfterBotStartup } from 'src/bot/api';
-import { ServerChannelSettings, ServerSettings, UserServerChannelSettings, UserServerSettings, UserSettings } from '../common/settingsTypes';
+import {
+  ServerChannelSettings,
+  ServerSettings,
+  UserServerChannelSettings,
+  UserServerSettings,
+  UserSettings,
+} from '../common/settingsTypes';
 import { Lock } from '../common/lock';
 import {
   deleteAllServerSettings,
@@ -109,7 +115,7 @@ export async function getAllUserSettings(): Promise<UserSettings[]> {
     }
     let result = await selectAllUserSettings();
     if (result === undefined) {
-      result = []
+      result = [];
     }
     return result;
   });
@@ -123,13 +129,16 @@ export async function getAllUserServerSettings(serverId: string): Promise<UserSe
     }
     let result = await selectAllUserServerSettings(serverId);
     if (result === undefined) {
-      result = []
+      result = [];
     }
     return result;
   });
 }
 
-export async function getAllUserServerChannelSettings(serverId: string, channelId: string): Promise<UserServerChannelSettings[]> {
+export async function getAllUserServerChannelSettings(
+  serverId: string,
+  channelId: string,
+): Promise<UserServerChannelSettings[]> {
   return await USER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     const cached = getAllCachedUserServerChannelSettings(serverId, channelId);
     if (cached) {
@@ -137,7 +146,7 @@ export async function getAllUserServerChannelSettings(serverId: string, channelI
     }
     let result = await selectAllUserServerChannelSettings(serverId, channelId);
     if (result === undefined) {
-      result = []
+      result = [];
     }
     return result;
   });
@@ -175,7 +184,11 @@ export async function getUserServerSettings(userId: string, serverId: string): P
  * Note: this function will only get cached values, because it expects that the user
  * settings are already cached via the `getAllUserServerChannelSettings` function.
  */
-export async function getUserServerChannelSettings(userId: string, serverId: string, channelId: string): Promise<UserServerChannelSettings> {
+export async function getUserServerChannelSettings(
+  userId: string,
+  serverId: string,
+  channelId: string,
+): Promise<UserServerChannelSettings> {
   return await USER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     const cached = getCachedUserServerChannelSettings(userId, serverId, channelId);
     if (cached) {
@@ -199,7 +212,9 @@ export async function setUserServerSettings(newUserServerSettings: UserServerSet
   });
 }
 
-export async function setUserServerChannelSettings(newUserServerChannelSettings: UserServerChannelSettings): Promise<void> {
+export async function setUserServerChannelSettings(
+  newUserServerChannelSettings: UserServerChannelSettings,
+): Promise<void> {
   await USER_SETTINGS_DB_LOCK.acquireWhile(async () => {
     await upsertUserSettings(newUserServerChannelSettings);
     setCachedUserServerChannelSettings(newUserServerChannelSettings);

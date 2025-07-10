@@ -4,7 +4,15 @@ import Database from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Message, type MessageIdsData, type MessageIdsMetadataData } from 'src/common/messageTypes';
 import { debug, error } from '../logger';
-import { ServerSettings, ServerChannelSettings, type ServerSettingsData, UserSettings, type UserSettingsData, UserServerSettings, UserServerChannelSettings } from '../common/settingsTypes';
+import {
+  ServerSettings,
+  ServerChannelSettings,
+  type ServerSettingsData,
+  UserSettings,
+  type UserSettingsData,
+  UserServerSettings,
+  UserServerChannelSettings,
+} from '../common/settingsTypes';
 import { messageIds, messageIdsMetadata, serverSettings, userSettings } from './tables';
 
 const sqlite = new Database('data/discord-ttl.db');
@@ -95,7 +103,10 @@ export async function selectAllUserServerSettings(serverId: string): Promise<Use
   return response;
 }
 
-export async function selectAllUserServerChannelSettings(serverId: string, channelId: string): Promise<UserServerChannelSettings[]> {
+export async function selectAllUserServerChannelSettings(
+  serverId: string,
+  channelId: string,
+): Promise<UserServerChannelSettings[]> {
   debug('[database] selectAllUserServerChannelSettings');
   const result = await db
     .select()
@@ -109,7 +120,9 @@ export async function selectAllUserServerChannelSettings(serverId: string, chann
   return response;
 }
 
-export async function upsertUserSettings(newUserSettings: UserSettings | UserServerSettings | UserServerChannelSettings): Promise<void> {
+export async function upsertUserSettings(
+  newUserSettings: UserSettings | UserServerSettings | UserServerChannelSettings,
+): Promise<void> {
   debug('[database] upsertUserSettings', JSON.stringify(newUserSettings, null, 2));
   await db
     .insert(userSettings)
@@ -130,7 +143,6 @@ export async function deleteAllUserServerSettingsByServerId(serverId: string): P
   debug('[database] deleteAllUserServerSettingsByServerId', serverId);
   await db.delete(userSettings).where(eq(userSettings.serverId, serverId)).execute();
 }
-
 
 // =-=-=---------------=-=-=
 // .｡.:☆ message apis ☆:.｡.

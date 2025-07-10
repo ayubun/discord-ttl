@@ -1,8 +1,14 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { getServerChannelSettings, getServerSettings, getUserServerChannelSettings, getUserServerSettings, getUserSettings } from '../../database/api';
+import { EffectiveServerChannelSettings } from 'src/common/settingsTypes';
+import {
+  getServerChannelSettings,
+  getServerSettings,
+  getUserServerChannelSettings,
+  getUserServerSettings,
+  getUserSettings,
+} from '../../database/api';
 import { CookieCommand } from '../cookie';
 import { getServerSettingsDisplay } from '../common/utils';
-import { EffectiveServerChannelSettings } from 'src/common/settingsTypes';
 
 const data = {
   default_member_permissions: String(PermissionFlagsBits.SendMessages),
@@ -14,9 +20,19 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
   const channelSettings = await getServerChannelSettings(interaction.guildId!, interaction.channelId);
   const userSettings = await getUserSettings(interaction.user.id);
   const userServerSettings = await getUserServerSettings(interaction.guildId!, interaction.user.id);
-  const userServerChannelSettings = await getUserServerChannelSettings(interaction.guildId!, interaction.channelId, interaction.user.id);
+  const userServerChannelSettings = await getUserServerChannelSettings(
+    interaction.guildId!,
+    interaction.channelId,
+    interaction.user.id,
+  );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const effectiveSettings = EffectiveServerChannelSettings.from(serverSettings, channelSettings, userSettings, userServerSettings, userServerChannelSettings);
+  const effectiveSettings = EffectiveServerChannelSettings.from(
+    serverSettings,
+    channelSettings,
+    userSettings,
+    userServerSettings,
+    userServerChannelSettings,
+  );
   await interaction.reply({
     embeds: [
       {
@@ -25,8 +41,8 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
           getServerSettingsDisplay(serverSettings, '### __Server Settings__') +
           '\n' +
           getServerSettingsDisplay(channelSettings, '### __Channel Settings__') +
-          '\n'
-          // TODO: Display all settings
+          '\n',
+        // TODO: Display all settings
       },
     ],
     ephemeral: true,
