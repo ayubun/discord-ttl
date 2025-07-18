@@ -30,6 +30,23 @@ async function deleteReadyMessages(): Promise<void> {
 }
 
 async function retrieveAndDeleteReadyMessages(): Promise<void> {
-  // TODO
+  /**
+   * - iterate over the servers:
+   *   - get global user settings; store in a map of userId -> user settings
+   *   - get all user server settings; make new map of userId -> user server settings (merging any global user settings)
+   *   - get server settings
+   *   - iterate over the channels:
+   *     - get server channel settings
+   *     - get user server channel settings; merge into new map of userId -> user server channel settings (merging any global or server user settings)
+   *     - for each unique user in the set:
+   *       - create an effective user server channel settings object
+   *       - query for message ids that are ready to be deleted via the effectiveTtl, with a limit of 100 (max bulk delete)
+   *       - run the delete for this server/channel/user combination
+   *       - update the message ids table to remove the deleted messages
+   *     - now, create an effective server channel settings object for the server channel ttl, providing default user settings
+   *     - query for message ids that are ready to be deleted via the effectiveTtl, with a limit of 100 (max bulk delete)
+   *       - use a WHERE clause that excludes author_ids that are within the set of users that have a user server channel settings
+   *     - run the delete for this server/channel combination
+   */
   return Promise.resolve();
 }

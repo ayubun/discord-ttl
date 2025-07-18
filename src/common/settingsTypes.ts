@@ -173,6 +173,10 @@ export class ServerChannelSettings extends ServerSettings {
     );
   }
 
+  /**
+   * Merges a {@link ServerSettings} with this {@link ServerChannelSettings} to produce a new {@link ServerChannelSettings},
+   * prioritizing the current {@link ServerChannelSettings} values over the {@link ServerSettings} values.
+   */
   public _applyServerSettings(serverSettings: ServerSettings): ServerChannelSettings {
     return new ServerChannelSettings(
       this.serverId,
@@ -293,6 +297,10 @@ export class UserServerSettings extends UserSettings {
     return new UserServerSettings(this.userId, this.serverId, this.messageTtl, this.includePins);
   }
 
+  /**
+   * Merges a {@link UserSettings} with this {@link UserServerSettings} to produce a new {@link UserServerSettings},
+   * prioritizing the current {@link UserServerSettings} values over the {@link UserSettings} values.
+   */
   public _applyUserSettings(userSettings: UserSettings): UserServerSettings {
     return new UserServerSettings(
       this.userId,
@@ -345,6 +353,10 @@ export class UserServerChannelSettings extends UserServerSettings {
     return new UserServerChannelSettings(this.userId, this.serverId, this.channelId, this.messageTtl, this.includePins);
   }
 
+  /**
+   * Merges a {@link UserServerSettings} with this {@link UserServerChannelSettings} to produce a new {@link UserServerChannelSettings},
+   * prioritizing the current {@link UserServerChannelSettings} values over the {@link UserServerSettings} values.
+   */
   public _applyUserServerSettings(userServerSettings: UserServerSettings): UserServerChannelSettings {
     return new UserServerChannelSettings(
       this.userId,
@@ -355,6 +367,10 @@ export class UserServerChannelSettings extends UserServerSettings {
     );
   }
 
+  /**
+   * Merges a {@link ServerChannelSettings} with this {@link UserServerChannelSettings} to produce a new {@link UserServerChannelSettings},
+   * prioritizing the current {@link UserServerChannelSettings} values over the {@link ServerChannelSettings} values.
+   */
   public _applyServerChannelSettings(serverChannelSettings: ServerChannelSettings): UserServerChannelSettings {
     return new UserServerChannelSettings(
       this.userId,
@@ -370,7 +386,7 @@ export class UserServerChannelSettings extends UserServerSettings {
 // .｡.:☆ effective settings calculator ☆:.｡.
 // =-=-=--------------------------------=-=-=
 
-export class EffectiveServerChannelSettings {
+export class EffectiveUserServerChannelSettings {
   private effectiveTtl: number | undefined;
 
   public static from(
@@ -380,12 +396,12 @@ export class EffectiveServerChannelSettings {
     userSettings: UserSettings,
     userServerSettings: UserServerSettings,
     userServerChannelSettings: UserServerChannelSettings,
-  ): EffectiveServerChannelSettings {
+  ): EffectiveUserServerChannelSettings {
     const effectiveServerChannelSettings = serverChannelSettings._applyServerSettings(serverSettings);
     const effectiveUserServerChannelSettings = userServerChannelSettings
       ._applyUserServerSettings(userServerSettings._applyUserSettings(userSettings))
       ._applyServerChannelSettings(effectiveServerChannelSettings);
-    return new EffectiveServerChannelSettings(
+    return new EffectiveUserServerChannelSettings(
       effectiveServerChannelSettings.getMessageTtl(),
       effectiveUserServerChannelSettings.getMessageTtl(),
       effectiveServerChannelSettings.getMaxMessageTtl(),

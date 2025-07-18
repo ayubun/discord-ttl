@@ -15,7 +15,7 @@ env:
 
 
 jobs:
-  build:
+  docker-publish-dev:
 
     runs-on: ubuntu-latest
     permissions:

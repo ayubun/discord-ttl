@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { EffectiveServerChannelSettings } from 'src/common/settingsTypes';
+import { EffectiveUserServerChannelSettings } from 'src/common/settingsTypes';
 import {
   getServerChannelSettings,
   getServerSettings,
@@ -26,7 +26,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
     interaction.user.id,
   );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const effectiveSettings = EffectiveServerChannelSettings.from(
+  const effectiveSettings = EffectiveUserServerChannelSettings.from(
     serverSettings,
     channelSettings,
     userSettings,

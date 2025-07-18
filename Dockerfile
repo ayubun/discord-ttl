@@ -8,7 +8,9 @@ COPY bun.lockb package.json tsconfig.json /usr/app/
 ADD drizzle /usr/app/drizzle
 ADD src /usr/app/src
 #
-RUN bun install 
+# --frozen-lockfile: wont modify lockfile
+# --production: does not install dev deps
+RUN bun install --frozen-lockfile --production
 RUN bun compile
 
 ###
@@ -22,4 +24,6 @@ COPY --from=0 /usr/app/node_modules /usr/app/node_modules
 COPY --from=0 /usr/app/dist /usr/app/dist
 COPY --from=0 /usr/app/drizzle /usr/app/drizzle
 #
-CMD bun run /usr/app/dist/app.js
+# --prefer-offline: skip staleness checks for deps
+# --no-install: dont auto-install deps
+CMD bun run --prefer-offline --no-install /usr/app/dist/app.js

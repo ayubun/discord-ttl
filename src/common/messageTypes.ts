@@ -9,7 +9,7 @@ import {
   getUserServerChannelSettings,
 } from '../database/api';
 import { error } from '../logger';
-import { EffectiveServerChannelSettings } from './settingsTypes';
+import { EffectiveUserServerChannelSettings } from './settingsTypes';
 
 // 14 days (discord's bulk deletion age threshold) (-600 sec for time to delete buffer)
 const BULK_DELETION_MAX_AGE_MILLIS: number = 1000 * (60 * 60 * 24 * 14 - 600);
@@ -90,7 +90,7 @@ export class Message {
    * @returns `true` if the message is older than the effective time to live
    */
   public async isTimeToDelete(): Promise<boolean> {
-    const effectiveSettings = EffectiveServerChannelSettings.from(
+    const effectiveSettings = EffectiveUserServerChannelSettings.from(
       await getServerSettings(this.serverId),
       await getServerChannelSettings(this.serverId, this.channelId),
       await getUserSettings(this.authorId),

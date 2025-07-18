@@ -1,4 +1,8 @@
 /**
+ *                         =-=-=------------=-=-=
+ *                         .｡.:☆ cookie.ts ☆:.｡.
+ *                         =-=-=------------=-=-=
+ *
  * cookie.ts is a TypeScript file that dynamically handles parity between
  * compatible `command/` files and the Discord API. The cookie.ts 'API' provides
  * a `CookieClient` wrapper for the Discord.js `Client` class, which is

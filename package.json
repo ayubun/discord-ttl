@@ -54,5 +54,6 @@
   "description": "(๑ > ᴗ < ๑)°ᡣ𐭩.°",
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "private": true
 }
