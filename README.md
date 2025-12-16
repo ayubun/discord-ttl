@@ -6,7 +6,7 @@
 </p>
 
 Discord TTL is a simple-to-selfhost Discord bot that protects privacy by deleting server messages older than a configurable TTL (time to live).
-TTLs can be configured for an entire server and/or specific channels. Individuals can also configure their own TTLs to override the default server or channel settings.
+TTLs can be configured for an entire server and/or specific channels.
 
 Setting up Discord TTL via the setup script comes with auto-updates so that hosters can get all of the latest features automatically upon new GitHub releases. 
 For those that wish to stay on a static version, auto-updates can be opted out of by adding a `--skip-auto-updater` flag to the setup script. An architecture 
