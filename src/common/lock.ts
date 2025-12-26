@@ -28,4 +28,13 @@ export class Lock {
       res();
     });
   }
+
+  public async acquireWhile<T>(task: () => Promise<T>) {
+    await this.acquire();
+    try {
+      return await task();
+    } finally {
+      await this.release();
+    }
+  }
 }

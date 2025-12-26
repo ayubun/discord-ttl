@@ -5,7 +5,7 @@
   "prettier.enable": true,
   "prettier.configPath": "./.prettierrc.yaml",
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "oven.bun-vscode",
     "editor.formatOnSave": true,
     "editor.rulers": [120]
   },

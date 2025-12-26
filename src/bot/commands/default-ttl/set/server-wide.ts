@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { FOREVER_TTL } from '../../../../common/types';
+import { FOREVER_TTL } from '../../../../common/settingsTypes';
 import { getServerSettings, setServerSettings } from '../../../../database/api';
 import { CookieCommand, CookieConfirmationMenu } from '../../../cookie';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import {
   getSecondsFromTimeString,
   getServerSettingsDiff,
@@ -85,7 +85,7 @@ const onExecute = async (self: CookieCommand, interaction: ChatInputCommandInter
   }
 
   if (includePinsDefault) {
-    newSettings.includePinsByDefault = includePinsDefault;
+    newSettings.includePins = includePinsDefault;
   }
 
   if (currentSettings === newSettings) {

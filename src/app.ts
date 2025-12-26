@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import figlet from 'figlet';
-import { loginToDiscordAndBeginDeleting } from './bot/api';
+import { loginToDiscordAndStart } from './bot/api';
 import { info, printStartupMessage } from './logger';
 dotenv.config();
 
@@ -11,4 +11,4 @@ console.log('');
 printStartupMessage();
 info('Starting up...');
 
-loginToDiscordAndBeginDeleting();
+loginToDiscordAndStart();
